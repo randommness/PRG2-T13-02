@@ -1,4 +1,6 @@
-﻿namespace PRG2_T13_02
+﻿using System.Runtime.InteropServices;
+
+namespace PRG2_T13_02
 {
     public class Terminal
     {
@@ -18,6 +20,43 @@
             GateFees = gateFees;
         }
 
+        public bool AddAirline(Airline al)
+        {
+            return(Airlines.TryAdd(al.Code, al));
+        }
+
+        public bool AddBoardingGate(BoardingGate bg)
+        {
+            return(BoardingGates.TryAdd(bg.GateName, bg));
+        }
+
+        public Airline GetAirlineFromFlight(Flight Flight)
+        {
+            foreach (KeyValuePair<string, Airline> kvp in Airlines)
+            {
+                foreach (KeyValuePair<string, Flight> a in kvp.Value.Flights)
+                {
+                    if (a.Value == Flight)
+                    {
+                        return kvp.Value;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public void PrintAirlineFees()
+        {
+            foreach (KeyValuePair<string, Airline> kvp in Airlines)
+            {
+                Console.WriteLine($"Airline: {kvp.Key}, Fees: {kvp.Value.CalculateFees()}");
+            }
+        }
+
+        public override string ToString()
+        {
+            return "terminal tostring edit later"; // To edit later
+        }
         // Methods: AddAirline(), AddBoardingGate(), GetAirlineFromFlight(), PrintAirlineFees(), ToString()
     }
 }

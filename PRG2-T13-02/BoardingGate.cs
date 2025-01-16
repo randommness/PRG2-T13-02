@@ -18,6 +18,15 @@
             Flight = flight;
         }
 
-        // Methods: CalculateFees(), ToString()
+        public double CalculateFees()
+        {
+            return Flight.CalculateFees() + 300;
+        }
+
+        public override string ToString()
+        {
+            return $"Gate Name: {GateName}, Supports CFFT?: {SupportsCFFT}, " +
+                   $"Supports DDJB?: {SupportsDDJB}, SupportsLWTT?: {SupportsLWTT}, Flight:\n{Flight}";
+        }
     }
 }
