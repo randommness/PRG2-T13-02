@@ -14,18 +14,24 @@ internal class Program
         Console.WriteLine(airlines);
         LoadBoardingGateFile(boardingGates);
         Console.WriteLine(boardingGates);
+
+        ListAllFlights(airlines, flightDict);
     }
     
     private static Dictionary<string, Flight> LoadFlights()
     {
+        // Initialise a flight dictionary, and create string array of records in flights.csv.
         Dictionary<string, Flight> flightDict = new Dictionary<string, Flight>();
         string[] allFlightsData = File.ReadAllLines("flights.csv");
+
         for (int i = 1; i < allFlightsData.Length; i++)
         {
-            // Flight Number,Origin,Destination,Expected Departure/Arrival,Special Request Code
+            // Split the line of data, and also get the special request code (if any).
             string[] flightData = allFlightsData[i].Split(",");
             string specialReqCode = flightData[4];
             Flight newFlight;
+
+            // Depending on the special request code, create the corresponding flight object.
             if (specialReqCode == "CFFT")
             {
                 newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]));
@@ -43,6 +49,7 @@ internal class Program
                 newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]));
             }
 
+            // Add this new object to the dictionary with flight number as key.
             flightDict.Add(newFlight.FlightNumber, newFlight);
         }
         return flightDict;
@@ -71,6 +78,40 @@ internal class Program
             BoardingGate boardingGate = new BoardingGate(parts[0], Convert.ToBoolean(parts[1]), Convert.ToBoolean(parts[2]), Convert.ToBoolean(parts[3]), null);
             //add the BoardingGate objects into a BoardingGate Dictionary
             bg.Add(parts[0], boardingGate);
+        }
+    }
+
+    private static void ListAllFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict)
+    {
+        // Display headers.
+        Console.WriteLine("=============================================");
+        Console.WriteLine("List of Flights for Changi Airport Terminal 5");
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Flight Number   Airline Name           Origin                 Destination            Expected Departure/Arrival Time");
+        
+        // Loop through each pair in flight dictionary.
+        foreach (Flight fl in flightDict.Values)
+        {
+            // Search for the tied airline. 
+            string airline = null;
+            foreach (Airline al in airlines.Values)
+            {
+                // Loop through each airline's flight dictionary to find which airline has this flight number.
+                foreach (string flightNo in al.Flights.Keys)
+                {
+                    if (flightNo == fl.FlightNumber)
+                    {
+                        airline = al.Name;
+                        break;
+                    }
+                }
+                if (airline != null) // Found, can break from loop.
+                {
+                    break;
+                }
+            }
+            // Display flight information, formatted.
+            Console.WriteLine($"{fl.FlightNumber,-16}{airline,-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
         }
     }
 }
