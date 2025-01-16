@@ -9,14 +9,22 @@ namespace PRG2_T13_02
     public class CFFTFlight : Flight
     {
         public double RequestFee { get; set; }
-        public CFFTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status, double requestFee) : base(flightNumber, origin, destination, expectedTime, status)
+        public CFFTFlight() : base() { }
+        public CFFTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) : base(flightNumber, origin, destination, expectedTime, status)
         {
-            RequestFee = requestFee;
+            RequestFee = 500;
         }
 
         public override double CalculateFees()
         {
-            return 300 + RequestFee; // Base gate fee + special request fee
+            if (Origin == "Singapore(SIN)")
+            {
+                return 800 + RequestFee; // Base gate fee + special request fee
+            }
+            else
+            {
+                return 500 + RequestFee; // Base gate fee + special request fee
+            }
         }
     }
 }
