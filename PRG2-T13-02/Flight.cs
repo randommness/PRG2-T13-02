@@ -9,18 +9,18 @@ namespace PRG2_T13_02
     internal abstract class Flight
     {
         public string FlightNumber { get; set; }
-        public string origin { get; set; }
+        public string Origin { get; set; }
         public string Destination { get; set; }
-        public DateTime ETD { get; set; }
-        public DateTime ETA { get; set; }
-        public Flight(string flightNumber, string destination, DateTime etd, DateTime eta)
+        public DateTime ExpectedTime { get; set; }
+        public string Status { get; set; }
+        public Flight(string flightNumber, string origin, string destination, DateTime expectedTime, string status)
         {
             FlightNumber = flightNumber;
+            Origin = origin;
             Destination = destination;
-            ETD = etd;
-            ETA = eta;
+            ExpectedTime = expectedTime;
+            Status = status;
         }
-        public abstract double CalculatePrice();
-        public abstract string ToString();
+        public abstract double CalculateFees();
     }
 }
