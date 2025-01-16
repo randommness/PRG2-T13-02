@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -13,7 +13,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="boardinggates.csv">
-=======
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="flights.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
