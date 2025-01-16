@@ -14,6 +14,29 @@
             Flights = flights;
         }
 
-        // Methods: AddFlight(), CalculateFees(), RemoveFlight(), ToString()
+        public bool AddFlight(Flight fl)
+        {
+            return (Flights.TryAdd(fl.FlightNumber, fl));
+        }
+
+        public double CalculateFees()
+        {
+            return 0; // ADVANCED FEATURE, edit later
+        }
+
+        public bool RemoveFlight(Flight fl)
+        {
+            return (Flights.Remove(fl.FlightNumber));
+        }
+
+        public override string ToString()
+        {
+            string output = $"Name: {Name}, Code: {Code}, Flights:";
+            foreach (KeyValuePair<string, Flight> kvp in Flights)
+            {
+                output += $"\n{kvp.Value}";
+            }
+            return output;
+        }
     }
 }
