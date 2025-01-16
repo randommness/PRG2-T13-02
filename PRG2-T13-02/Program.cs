@@ -10,6 +10,9 @@ internal class Program
         // Close file: Make sure to commit changes if ready
         // DON'T EDIT MASTER BRANCH
         LoadAirlineFile(airlines);
+        Console.WriteLine(airlines);
+        LoadBoardingGateFile(boardingGates);
+        Console.WriteLine(boardingGates);
     }
     private static void LoadAirlineFile(Dictionary<string, Airline> air)
     {
