@@ -24,5 +24,9 @@ namespace PRG2_T13_02
             Status = status;
         }
         public abstract double CalculateFees();
+        public override string ToString()
+        {
+            return string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4,-10}", FlightNumber, Origin, Destination, ExpectedTime, Status);
+        }
     }
 }
