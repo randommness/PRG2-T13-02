@@ -1,4 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿//==========================================================
+// Student Number : S10266694
+// Student Name	  : Tang Wei Zheng Caden
+// Partner Name	  : Sim Wen Jye Timothy
+//==========================================================
 
 namespace PRG2_T13_02
 {
@@ -57,6 +61,5 @@ namespace PRG2_T13_02
         {
             return "terminal tostring edit later"; // To edit later
         }
-        // Methods: AddAirline(), AddBoardingGate(), GetAirlineFromFlight(), PrintAirlineFees(), ToString()
     }
 }

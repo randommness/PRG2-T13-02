@@ -1,4 +1,10 @@
-﻿namespace PRG2_T13_02
+﻿//==========================================================
+// Student Number : S10266694
+// Student Name	  : Tang Wei Zheng Caden
+// Partner Name	  : Sim Wen Jye Timothy
+//==========================================================
+
+namespace PRG2_T13_02
 {
     public class BoardingGate
     {
