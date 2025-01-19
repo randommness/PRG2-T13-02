@@ -10,7 +10,7 @@ namespace PRG2_T13_02
     {
         public double RequestFee { get; set; }
         public LWTTFlight() : base() { }
-        public LWTTFlight(string flightNumber, string origin, string destination, DateTime expectedTime) : base(flightNumber, origin, destination, expectedTime)
+        public LWTTFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) : base(flightNumber, origin, destination, expectedTime, status)
         {
             RequestFee = 500;
         }
