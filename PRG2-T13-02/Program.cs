@@ -103,7 +103,7 @@ internal class Program
         return flightDict;
     }
   
-    private static void LoadAirlineFile(Dictionary<string, Airline> air)
+    private static Dictionary<string, Airline> LoadAirlineFile(Dictionary<string, Airline> air)
     {
         string[] lines = File.ReadAllLines("airlines.csv");
         for(int i = 1; i < lines.Length; i++)
@@ -114,19 +114,23 @@ internal class Program
             //add the Airlines objects into an Airline Dictionary
             air.Add(parts[1], airline);
         }
+        Console.WriteLine($"{air.Count} Airlines Loaded!");
+        return air;
     }
   
-    private static void LoadBoardingGateFile(Dictionary<string, BoardingGate> bg)
+    private static Dictionary<string, BoardingGate> LoadBoardingGateFile(Dictionary<string, BoardingGate> bg)
     {
         string[] lines2 = File.ReadAllLines("boardingGates.csv");
         for (int i = 1; i < lines2.Length; i++)
         {
             string[] parts = lines2[i].Split(',');
             //create the BoardingGate objects based on the data loaded
-            BoardingGate boardingGate = new BoardingGate(parts[0], Convert.ToBoolean(parts[1]), Convert.ToBoolean(parts[2]), Convert.ToBoolean(parts[3]), null);
+            BoardingGate boardingGate = new BoardingGate(parts[0], Convert.ToBoolean(parts[2]), Convert.ToBoolean(parts[1]), Convert.ToBoolean(parts[3]), null);
             //add the BoardingGate objects into a BoardingGate Dictionary
             bg.Add(parts[0], boardingGate);
         }
+        Console.WriteLine($"{bg.Count} Boarding Gates Loaded!");
+        return bg;
     }
 
     private static void ListAllFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict)
