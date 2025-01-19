@@ -14,13 +14,13 @@ namespace PRG2_T13_02
         public DateTime ExpectedTime { get; set; }
         public string Status { get; set; }
         public Flight() { }
-        public Flight(string flightNumber, string origin, string destination, DateTime expectedTime)
+        public Flight(string flightNumber, string origin, string destination, DateTime expectedTime, string status)
         {
             FlightNumber = flightNumber;
             Origin = origin;
             Destination = destination;
             ExpectedTime = expectedTime;
-            Status = "On Time";
+            Status = status;
         }
         public abstract double CalculateFees();
         public override string ToString()

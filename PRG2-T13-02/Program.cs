@@ -14,8 +14,10 @@ internal class Program
         Console.WriteLine(airlines);
         LoadBoardingGateFile(boardingGates);
         Console.WriteLine(boardingGates);
-
+        
         ListAllFlights(airlines, flightDict);
+
+        AssignBoardingGateToFlight(flightDict, boardingGates);
     }
     
     private static Dictionary<string, Flight> LoadFlights()
@@ -34,19 +36,19 @@ internal class Program
             // Depending on the special request code, create the corresponding flight object.
             if (specialReqCode == "CFFT")
             {
-                newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]));
+                newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
             }
             else if (specialReqCode == "DDJB")
             {
-                newFlight = new DDJBFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]));
+                newFlight = new DDJBFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
             }
             else if (specialReqCode == "LWTT")
             {
-                newFlight = new LWTTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]));
+                newFlight = new LWTTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
             }
             else
             {
-                newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]));
+                newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
             }
 
             // Add this new object to the dictionary with flight number as key.
@@ -114,4 +116,149 @@ internal class Program
             Console.WriteLine($"{fl.FlightNumber,-16}{airline,-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
         }
     }
-}
+
+    public static void AssignBoardingGateToFlight(Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates)
+    {
+        // Headers.
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Assign a Boarding Gate to a Flight");
+        Console.WriteLine("=============================================");
+
+        // Initialise the flight and boarding gate objects for later.
+        Flight flightObj = null;
+        BoardingGate boardingGateObj = null;
+
+        // Keep looping through until we get a valid flight object.
+        while (true)
+        {
+            // Prompt for flight number. Search for corresponding flight object.
+            Console.WriteLine("Enter Flight Number:");
+            string flightNo = Console.ReadLine();
+            foreach (Flight fl in flightDict.Values)
+            {
+                if (fl.FlightNumber == flightNo)
+                {
+                    flightObj = fl;
+                    break;
+                }
+            }
+            if (flightObj == null)
+            {
+                // No corresponding object found.
+                Console.WriteLine("Invalid flight number, please try again.\n");
+                continue;
+            }
+            break;
+        }
+
+        // Keep looping through until we get a valid boardingGate object.
+        while (true)
+        {
+            // Prompt for boarding gate. Search for corresponding boarding gate object.
+            Console.WriteLine("Enter Boarding Gate Name:");
+            string boardingGate = Console.ReadLine();
+            foreach (BoardingGate bg in boardingGates.Values)
+            {
+                if (bg.GateName == boardingGate)
+                {
+                    boardingGateObj = bg;
+                    break;
+                }
+            }
+            if (boardingGateObj == null)
+            {
+                // No corresponding object found.
+                Console.WriteLine("Invalid boarding gate, please try again.\n");
+                continue;
+            }
+
+            if (boardingGateObj.Flight != null)
+            {
+                // Boarding gate is used.
+                Console.WriteLine($"Boarding Gate is used by Flight {boardingGateObj.Flight.FlightNumber}. Please try again.\n");
+                continue;
+            }
+            break;
+        }
+
+        // Display basic flight information and the special request code (if any).
+        Console.WriteLine($"Flight Number: {flightObj.FlightNumber}");
+        Console.WriteLine($"Origin: {flightObj.Origin}");
+        Console.WriteLine($"Destination: {flightObj.Destination}");
+        Console.WriteLine($"Expected Time: {flightObj.ExpectedTime}");
+        if (flightObj is DDJBFlight)
+        {
+            Console.WriteLine("Special Request Code: DDJB");
+        }
+        else if (flightObj is CFFTFlight)
+        {
+            Console.WriteLine("Special Request Code: CFFT");
+        }
+        else if (flightObj is LWTTFlight)
+        {
+            Console.WriteLine("Special Request Code: LWTT");
+        }
+        else
+        {
+            Console.WriteLine("Special Request Code: None");
+        }
+
+        // Display boarding gate information.
+        Console.WriteLine($"Boarding Gate Name: {boardingGateObj.GateName}");
+        Console.WriteLine($"Supports DDJB: {boardingGateObj.SupportsDDJB}");
+        Console.WriteLine($"Supports CFFT: {boardingGateObj.SupportsCFFT}");
+        Console.WriteLine($"Supports LWTT: {boardingGateObj.SupportsLWTT}");
+
+        // Assign the flight object to this boading gate object.
+        boardingGateObj.Flight = flightObj;
+
+        // Prompt for user whether they wish to update flight status.
+        Console.WriteLine("Would you like to update the status of the flight? (Y/N)");
+        string userResponse = Console.ReadLine().ToUpper();
+        if (userResponse == "Y")
+        {
+            // Keep looping through until we successfully update the status.
+            while (true)
+            {
+                Console.WriteLine("1. Delayed");
+                Console.WriteLine("2. Boarding");
+                Console.WriteLine("3. On Time");
+                Console.WriteLine("Please select the new status of the flight:");
+                try
+                {
+                    // Try to convert input to integer, then update the object's status attribute based on input.
+                    int userInput = Convert.ToInt32(Console.ReadLine());
+                    if (userInput == 1)
+                    {
+                        flightObj.Status = "Delayed";
+                    }
+                    else if (userInput == 2)
+                    {
+                        flightObj.Status = "Boarding";
+                    }
+                    else if (userInput == 3)
+                    {
+                        flightObj.Status = "On Time";
+                    }
+                    else
+                    {
+                        // Input was integer but not one of the 3 stated options.
+                        Console.WriteLine("Invalid status option, please try again.\n");
+                        continue;
+                    }
+                    break;
+                }
+                catch (FormatException ex)
+                {
+                    // Input was not of integer type.
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Only numerical values are accepted. Please try again.\n");
+                    continue;
+                }
+            }
+        }
+
+        // Display successful update message, then break out of this loop and method.
+        Console.WriteLine($"Flight {flightObj.FlightNumber} has been assigned to Boarding Gate {boardingGateObj.GateName}!");
+        }
+    }

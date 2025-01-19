@@ -31,8 +31,8 @@ namespace PRG2_T13_02
 
         public override string ToString()
         {
-            return $"Gate Name: {GateName}, Supports CFFT?: {SupportsCFFT}, " +
-                   $"Supports DDJB?: {SupportsDDJB}, SupportsLWTT?: {SupportsLWTT}, Flight:\n{Flight}";
+            return $"Boarding Gate Name: {GateName}, Supports DDJB: {SupportsDDJB}, " +
+                   $"Supports CFFT: {SupportsCFFT}, Supports LWTT: {SupportsLWTT}, Flight: {Flight}";
         }
     }
 }

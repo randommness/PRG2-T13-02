@@ -59,7 +59,26 @@ namespace PRG2_T13_02
 
         public override string ToString()
         {
-            return "terminal tostring edit later"; // To edit later
+            string output = $"Terminal Name: {TerminalName}";
+            output += "\nList of airlines:";
+            foreach (Airline al in Airlines.Values)
+            {
+                output += $"\n{al.ToString()}";
+            }
+            output += "\nList of flights:";
+            foreach (Flight fl in Flights.Values)
+            {
+                output += $"\n{fl.ToString()}";
+            }
+            foreach (BoardingGate bg in BoardingGates.Values)
+            {
+                output += $"\n{bg.ToString()}";
+            }
+            foreach (KeyValuePair<string, double> kvp in GateFees)
+            {
+                output += $"\n{kvp.Key}: ${kvp.Value}";
+            }
+            return output;
         }
     }
 }
