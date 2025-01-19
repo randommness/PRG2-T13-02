@@ -15,15 +15,18 @@ internal class Program
         Dictionary<string, Flight> flightDict = LoadFlights();
         Console.WriteLine("\n\n\n");
 
-
-        int menuInput = DisplayMenu();
-        if (menuInput == 1)
+        while (true)
         {
-            ListAllFlights(airlines, flightDict);
-        }
-        else if (menuInput == 3)
-        {
-            AssignBoardingGateToFlight(flightDict, boardingGates);
+            int menuInput = DisplayMenu();
+            if (menuInput == 1)
+            {
+                ListAllFlights(airlines, flightDict);
+            }
+            else if (menuInput == 3)
+            {
+                AssignBoardingGateToFlight(flightDict, boardingGates);
+            }
+            Console.WriteLine();
         }
     }
     
@@ -41,11 +44,11 @@ internal class Program
             Console.WriteLine("5. Display Airline Flights");
             Console.WriteLine("6. Modify Flight Details");
             Console.WriteLine("7. Display Flight Schedule");
-            Console.WriteLine("0. Exit");
+            Console.WriteLine("0. Exit\n");
 
             try
             {
-                Console.WriteLine("\nPlease select your option:");
+                Console.WriteLine("Please select your option:");
                 int userOption = Convert.ToInt32(Console.ReadLine());
                 if (userOption >= 0 && userOption <= 7)
                 {
@@ -303,5 +306,5 @@ internal class Program
 
         // Display successful update message, then break out of this loop and method.
         Console.WriteLine($"Flight {flightObj.FlightNumber} has been assigned to Boarding Gate {boardingGateObj.GateName}!");
-        }
     }
+}
