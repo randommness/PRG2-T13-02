@@ -1,27 +1,69 @@
 ﻿using PRG2_T13_02;
 
+// Open file: Please fetch and pull via Git
+// Close file: Make sure to commit changes if ready
+// DON'T EDIT MASTER BRANCH
+
 internal class Program
 {
     private static void Main(string[] args)
     {
-        // Open file: Please fetch and pull via Git
-        // Close file: Make sure to commit changes if ready
-        // DON'T EDIT MASTER BRANCH
         Dictionary<string, Airline> airlines = new Dictionary<string, Airline>();
-        Dictionary<string, BoardingGate> boardingGates = new Dictionary<string, BoardingGate>();
-        Dictionary<string, Flight> flightDict = LoadFlights();
         LoadAirlineFile(airlines);
-        Console.WriteLine(airlines);
+        Dictionary<string, BoardingGate> boardingGates = new Dictionary<string, BoardingGate>();
         LoadBoardingGateFile(boardingGates);
-        Console.WriteLine(boardingGates);
-        
-        ListAllFlights(airlines, flightDict);
+        Dictionary<string, Flight> flightDict = LoadFlights();
+        Console.WriteLine("\n\n\n");
 
-        AssignBoardingGateToFlight(flightDict, boardingGates);
+
+        int menuInput = DisplayMenu();
+        if (menuInput == 1)
+        {
+            ListAllFlights(airlines, flightDict);
+        }
+        else if (menuInput == 3)
+        {
+            AssignBoardingGateToFlight(flightDict, boardingGates);
+        }
     }
     
+    private static int DisplayMenu()
+    {
+        while (true)
+        {
+            Console.WriteLine("=============================================");
+            Console.WriteLine("Welcome to Changi Airport Terminal 5");
+            Console.WriteLine("=============================================");
+            Console.WriteLine("1. List All Flights");
+            Console.WriteLine("2. List Boarding Gates");
+            Console.WriteLine("3. Assign a Boarding Gate to a Flight");
+            Console.WriteLine("4. Create Flight");
+            Console.WriteLine("5. Display Airline Flights");
+            Console.WriteLine("6. Modify Flight Details");
+            Console.WriteLine("7. Display Flight Schedule");
+            Console.WriteLine("0. Exit");
+
+            try
+            {
+                Console.WriteLine("\nPlease select your option:");
+                int userOption = Convert.ToInt32(Console.ReadLine());
+                if (userOption >= 0 && userOption <= 7)
+                {
+                    return userOption;
+                }
+                Console.WriteLine("Please pick an option in the menu (0 to 7). Please try again.\n");
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Only numerical values are accepted. Please try again.\n");
+            }
+        }
+    }
+
     private static Dictionary<string, Flight> LoadFlights()
     {
+        Console.WriteLine("Loading Flights...");
         // Initialise a flight dictionary, and create string array of records in flights.csv.
         Dictionary<string, Flight> flightDict = new Dictionary<string, Flight>();
         string[] allFlightsData = File.ReadAllLines("flights.csv");
@@ -54,6 +96,7 @@ internal class Program
             // Add this new object to the dictionary with flight number as key.
             flightDict.Add(newFlight.FlightNumber, newFlight);
         }
+        Console.WriteLine($"{flightDict.Count} Flights Loaded!");
         return flightDict;
     }
   
