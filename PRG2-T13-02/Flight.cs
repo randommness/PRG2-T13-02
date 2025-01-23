@@ -4,9 +4,11 @@
 // Partner Name	  : Tang Wei Zheng Caden
 //==========================================================
 
+using System;
+
 namespace PRG2_T13_02
 {
-    public abstract class Flight
+    public abstract class Flight : IComparable<Flight>
     {
         public string FlightNumber { get; set; }
         public string Origin { get; set; }
@@ -26,6 +28,11 @@ namespace PRG2_T13_02
         public override string ToString()
         {
             return string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4,-10}", FlightNumber, Origin, Destination, ExpectedTime, Status);
+        }
+
+        public int CompareTo(Flight other)
+        {
+            return ExpectedTime.CompareTo(other.ExpectedTime);
         }
     }
 }

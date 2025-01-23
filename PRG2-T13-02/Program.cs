@@ -26,6 +26,10 @@ internal class Program
             {
                 CreateFlight(flightDict);
             }
+            else if (menuInput == 7)
+            {
+                DisplayScheduledFlights(airlines, flightDict, boardingGates);
+            }
             Console.WriteLine();
         }
     }
@@ -64,6 +68,7 @@ internal class Program
         }
     }
 
+    //  LoadFlights() method creates the Flight objects from the flights.csv file.
     private static Dictionary<string, Flight> LoadFlights()
     {
         Console.WriteLine("Loading Flights...");
@@ -81,19 +86,19 @@ internal class Program
             // Depending on the special request code, create the corresponding flight object.
             if (specialReqCode == "CFFT")
             {
-                newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
+                newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
             }
             else if (specialReqCode == "DDJB")
             {
-                newFlight = new DDJBFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
+                newFlight = new DDJBFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
             }
             else if (specialReqCode == "LWTT")
             {
-                newFlight = new LWTTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
+                newFlight = new LWTTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
             }
             else
             {
-                newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "On Time");
+                newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
             }
 
             // Add this new object to the dictionary with flight number as key.
@@ -133,6 +138,25 @@ internal class Program
         return bg;
     }
 
+    // FindAirlineLinked() method returns the Airline object that holds the Flight object in search.
+    public static Airline FindAirlineLinked(Flight fl, Dictionary<string, Airline> airlines)
+    {
+        // Search for the tied airline. 
+        foreach (Airline searchAirline in airlines.Values)
+        {
+            // Loop through each airline's flight dictionary to find which airline has this flight number.
+            foreach (Flight searchFlight in searchAirline.Flights.Values)
+            {
+                if (searchFlight.FlightNumber == fl.FlightNumber)
+                {
+                    return searchAirline;
+                }
+            }
+        }
+        return null;
+    }
+
+    // ListAllFlights() is menu option 1, basic feature 3. It displays all flights and their information.
     private static void ListAllFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict)
     {
         // Display headers.
@@ -144,29 +168,12 @@ internal class Program
         // Loop through each pair in flight dictionary.
         foreach (Flight fl in flightDict.Values)
         {
-            // Search for the tied airline. 
-            string airline = null;
-            foreach (Airline al in airlines.Values)
-            {
-                // Loop through each airline's flight dictionary to find which airline has this flight number.
-                foreach (string flightNo in al.Flights.Keys)
-                {
-                    if (flightNo == fl.FlightNumber)
-                    {
-                        airline = al.Name;
-                        break;
-                    }
-                }
-                if (airline != null) // Found, can break from loop.
-                {
-                    break;
-                }
-            }
             // Display flight information, formatted.
-            Console.WriteLine($"{fl.FlightNumber,-16}{airline,-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
+            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines).Name,-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
         }
     }
 
+    // AssignBoardingGateToFlight() is menu option 3, basic feature 5. It assigns a boarding gate to a flight based on user input.
     public static void AssignBoardingGateToFlight(Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates)
     {
         // Headers.
@@ -312,6 +319,7 @@ internal class Program
         Console.WriteLine($"Flight {flightObj.FlightNumber} has been assigned to Boarding Gate {boardingGateObj.GateName}!");
     }
 
+    // CreateFlight() is menu option 4, basic feature 6. It creates a new Flight object based on user input, appending to flightDict and flights.csv.
     public static void CreateFlight(Dictionary<string, Flight> flightDict)
     {
         // Keep looping until user is done with creating flight(s).
@@ -350,20 +358,20 @@ internal class Program
             Flight newFlight;
             if (reqCode == "CFFT")
             {
-                newFlight = new CFFTFlight(flightNo, origin, destination, expectedTime, "On Time");
+                newFlight = new CFFTFlight(flightNo, origin, destination, expectedTime, "Scheduled");
             }
             else if (reqCode == "DDJB")
             {
-                newFlight = new DDJBFlight(flightNo, origin, destination, expectedTime, "On Time");
+                newFlight = new DDJBFlight(flightNo, origin, destination, expectedTime, "Scheduled");
             }
             else if (reqCode == "LWTT")
             {
-                newFlight = new LWTTFlight(flightNo, origin, destination, expectedTime, "On Time");
+                newFlight = new LWTTFlight(flightNo, origin, destination, expectedTime, "Scheduled");
             }
             else
             {
                 reqCode = "";
-                newFlight = new NORMFlight(flightNo, origin, destination, expectedTime, "On Time");
+                newFlight = new NORMFlight(flightNo, origin, destination, expectedTime, "Scheduled");
             }
             // Add this flight object to the flight dictionary.
             flightDict.Add(flightNo, newFlight);
@@ -381,6 +389,38 @@ internal class Program
                 continue;
             }
             break;
+        }
+    }
+
+    // DisplayScheduledFlights() is menu option 7, basic feature 9. It displays all flights and info, ordered by Expected Departure/Arrival Time.
+    public static void DisplayScheduledFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates)
+    {
+        // Display headers.
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Flight Schedule for Changi Airport Terminal 5");
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Flight Number   Airline Name           Origin                Destination            Expected Departure/Arrival Time     Status         Boarding Gate");
+        
+        // Set the Flight objects into a list. This allows us to use Sort(), which sorts by DateTime.
+        List<Flight> flightList = new List<Flight>(flightDict.Values);
+        flightList.Sort();
+
+        foreach (Flight fl in flightList)
+        {
+            // Find the boarding gate. If none are found, stick to default ("Unassigned").
+            string boardingGateName = "Unassigned";
+            foreach (BoardingGate bg in boardingGates.Values)
+            {
+                if (bg.Flight == fl)
+                {
+                    boardingGateName = bg.GateName;
+                    break;
+                }
+            }
+
+            // Display the relevant information, formatted with respect to the headers.
+            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines).Name,-23}{fl.Origin,-22}" +
+                              $"{fl.Destination,-23}{fl.ExpectedTime,-36}{fl.Status,-15}{boardingGateName}");
         }
     }
 }
