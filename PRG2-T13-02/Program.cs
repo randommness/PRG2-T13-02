@@ -26,10 +26,14 @@ internal class Program
             {
                 AssignBoardingGateToFlight(flightDict, boardingGates);
             }
+            else if (menuInput == 4)
+            {
+                CreateFlight(flightDict);
+            }
             Console.WriteLine();
         }
     }
-    
+
     private static int DisplayMenu()
     {
         while (true)
@@ -102,11 +106,11 @@ internal class Program
         Console.WriteLine($"{flightDict.Count} Flights Loaded!");
         return flightDict;
     }
-  
+
     private static Dictionary<string, Airline> LoadAirlineFile(Dictionary<string, Airline> air)
     {
         string[] lines = File.ReadAllLines("airlines.csv");
-        for(int i = 1; i < lines.Length; i++)
+        for (int i = 1; i < lines.Length; i++)
         {
             string[] parts = lines[i].Split(',');
             //create the Airline objects based on the data loaded
@@ -117,7 +121,7 @@ internal class Program
         Console.WriteLine($"{air.Count} Airlines Loaded!");
         return air;
     }
-  
+
     private static Dictionary<string, BoardingGate> LoadBoardingGateFile(Dictionary<string, BoardingGate> bg)
     {
         string[] lines2 = File.ReadAllLines("boardingGates.csv");
@@ -140,7 +144,7 @@ internal class Program
         Console.WriteLine("List of Flights for Changi Airport Terminal 5");
         Console.WriteLine("=============================================");
         Console.WriteLine("Flight Number   Airline Name           Origin                 Destination            Expected Departure/Arrival Time");
-        
+
         // Loop through each pair in flight dictionary.
         foreach (Flight fl in flightDict.Values)
         {
@@ -310,5 +314,75 @@ internal class Program
 
         // Display successful update message, then break out of this loop and method.
         Console.WriteLine($"Flight {flightObj.FlightNumber} has been assigned to Boarding Gate {boardingGateObj.GateName}!");
+    }
+
+    public static void CreateFlight(Dictionary<string, Flight> flightDict)
+    {
+        // Keep looping until user is done with creating flight(s).
+        while (true)
+        {
+            // Prompt user for necessary flight info.
+            Console.Write("Enter Flight Number: ");
+            string flightNo = Console.ReadLine();
+            Console.Write("Enter Origin: ");
+            string origin = Console.ReadLine();
+            Console.Write("Enter Destination: ");
+            string destination = Console.ReadLine();
+
+            // Input validation - If the expected time is not of DateTime format, catch exception and repeat.
+            DateTime expectedTime;
+            while (true)
+            {
+                try
+                {
+                    Console.Write("Enter Expected Departure/Arrival Time (dd/mm/yyyy hh:mm): ");
+                    expectedTime = Convert.ToDateTime(Console.ReadLine());
+                    break;
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine("Wrong format. Please try again.");
+                }
+            }
+
+            // Prompt user for special request code, if any.
+            Console.Write("Enter Special Request Code (CFFT/DDJB/LWTT/None): ");
+            string reqCode = Console.ReadLine().ToUpper();
+
+            // Downcasting - Create the Flight object based on the special request code.
+            Flight newFlight;
+            if (reqCode == "CFFT")
+            {
+                newFlight = new CFFTFlight(flightNo, origin, destination, expectedTime, "On Time");
+            }
+            else if (reqCode == "DDJB")
+            {
+                newFlight = new DDJBFlight(flightNo, origin, destination, expectedTime, "On Time");
+            }
+            else if (reqCode == "LWTT")
+            {
+                newFlight = new LWTTFlight(flightNo, origin, destination, expectedTime, "On Time");
+            }
+            else
+            {
+                reqCode = "";
+                newFlight = new NORMFlight(flightNo, origin, destination, expectedTime, "On Time");
+            }
+            // Add this flight object to the flight dictionary.
+            flightDict.Add(flightNo, newFlight);
+
+            // Add the new flight's information
+            File.AppendAllText("flights.csv", $"{flightNo},{origin},{destination},{expectedTime},{reqCode}");
+            Console.WriteLine($"Flight {flightNo} has been added!");
+            Console.WriteLine("Would you like to add another flight? (Y/N)");
+            string toContinue = Console.ReadLine().ToUpper();
+            if (toContinue == "Y")
+            {
+                Console.WriteLine();
+                continue;
+            }
+            break;
+        }
     }
 }
