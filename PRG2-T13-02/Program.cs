@@ -1,9 +1,5 @@
 ﻿using PRG2_T13_02;
 
-// Open file: Please fetch and pull via Git
-// Close file: Make sure to commit changes if ready
-// DON'T EDIT MASTER BRANCH
-
 internal class Program
 {
     private static void Main(string[] args)
@@ -372,9 +368,11 @@ internal class Program
             // Add this flight object to the flight dictionary.
             flightDict.Add(flightNo, newFlight);
 
-            // Add the new flight's information
+            // Add the new flight's information into flights.csv file.
             File.AppendAllText("flights.csv", $"{flightNo},{origin},{destination},{expectedTime},{reqCode}");
             Console.WriteLine($"Flight {flightNo} has been added!");
+
+            // Prompt user if they wish to add another flight.
             Console.WriteLine("Would you like to add another flight? (Y/N)");
             string toContinue = Console.ReadLine().ToUpper();
             if (toContinue == "Y")
