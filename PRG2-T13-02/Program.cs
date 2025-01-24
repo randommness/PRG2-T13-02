@@ -8,7 +8,7 @@ internal class Program
         LoadAirlineFile(airlines);
         Dictionary<string, BoardingGate> boardingGates = new Dictionary<string, BoardingGate>();
         LoadBoardingGateFile(boardingGates);
-        Dictionary<string, Flight> flightDict = LoadFlights();
+        Dictionary<string, Flight> flightDict = LoadFlights(airlines);
         Console.WriteLine("\n\n\n");
 
         while (true)
@@ -24,16 +24,17 @@ internal class Program
             }
             else if (menuInput == 4)
             {
-                CreateFlight(flightDict);
+                CreateFlight(flightDict, airlines);
             }
             else if (menuInput == 7)
             {
                 DisplayScheduledFlights(airlines, flightDict, boardingGates);
             }
-            Console.WriteLine();
+            Console.WriteLine("\n\n\n");
         }
     }
 
+    // DisplayMenu() displays the menu and returns the user's input.
     private static int DisplayMenu()
     {
         while (true)
@@ -69,7 +70,7 @@ internal class Program
     }
 
     //  LoadFlights() method creates the Flight objects from the flights.csv file.
-    private static Dictionary<string, Flight> LoadFlights()
+    private static Dictionary<string, Flight> LoadFlights(Dictionary<string, Airline> airlines)
     {
         Console.WriteLine("Loading Flights...");
         // Initialise a flight dictionary, and create string array of records in flights.csv.
@@ -103,6 +104,9 @@ internal class Program
 
             // Add this new object to the dictionary with flight number as key.
             flightDict.Add(newFlight.FlightNumber, newFlight);
+
+            // Assign the flight to an airline, adding this Flight object into the airline's flight dictionary.
+            FlightAirlineAssignment(newFlight, airlines);
         }
         Console.WriteLine($"{flightDict.Count} Flights Loaded!");
         return flightDict;
@@ -115,7 +119,7 @@ internal class Program
         {
             string[] parts = lines[i].Split(',');
             //create the Airline objects based on the data loaded
-            Airline airline = new Airline(parts[0], parts[1], null);
+            Airline airline = new Airline(parts[0], parts[1]);
             //add the Airlines objects into an Airline Dictionary
             air.Add(parts[1], airline);
         }
@@ -136,6 +140,23 @@ internal class Program
         }
         Console.WriteLine($"{bg.Count} Boarding Gates Loaded!");
         return bg;
+    }
+
+    //  FlightAirlineAssignment() method assigns a Flight object to the corresponding Airline's flight dictionary.
+    private static void FlightAirlineAssignment(Flight fl, Dictionary<string, Airline> airlines)
+    {
+        // Search through each Airline object in the airline dictionary.
+        string flCode = fl.FlightNumber.Split(" ")[0];
+        foreach (Airline searchAirline in airlines.Values)
+        {
+            if (searchAirline.Code == flCode)
+            {
+                searchAirline.AddFlight(fl);
+                return;
+            }
+        }
+        // No tied airline.
+        Console.WriteLine("WARNING: The flight you created has no airline assigned to it.");
     }
 
     // FindAirlineLinked() method returns the Airline object that holds the Flight object in search.
@@ -314,13 +335,17 @@ internal class Program
                 }
             }
         }
+        else
+        {
+            flightObj.Status = "On Time";
+        }
 
         // Display successful update message, then break out of this loop and method.
         Console.WriteLine($"Flight {flightObj.FlightNumber} has been assigned to Boarding Gate {boardingGateObj.GateName}!");
     }
 
     // CreateFlight() is menu option 4, basic feature 6. It creates a new Flight object based on user input, appending to flightDict and flights.csv.
-    public static void CreateFlight(Dictionary<string, Flight> flightDict)
+    public static void CreateFlight(Dictionary<string, Flight> flightDict, Dictionary<string, Airline> airlines)
     {
         // Keep looping until user is done with creating flight(s).
         while (true)
@@ -373,8 +398,9 @@ internal class Program
                 reqCode = "";
                 newFlight = new NORMFlight(flightNo, origin, destination, expectedTime, "Scheduled");
             }
-            // Add this flight object to the flight dictionary.
+            // Add this flight object to the flight dictionary and the corresponding airline's flight dictionary.
             flightDict.Add(flightNo, newFlight);
+            FlightAirlineAssignment(newFlight, airlines);
 
             // Add the new flight's information into flights.csv file.
             File.AppendAllText("flights.csv", $"{flightNo},{origin},{destination},{expectedTime},{reqCode}");
@@ -399,7 +425,7 @@ internal class Program
         Console.WriteLine("=============================================");
         Console.WriteLine("Flight Schedule for Changi Airport Terminal 5");
         Console.WriteLine("=============================================");
-        Console.WriteLine("Flight Number   Airline Name           Origin                Destination            Expected Departure/Arrival Time     Status         Boarding Gate");
+        Console.WriteLine("Flight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Status      Special Code   Boarding Gate");
         
         // Set the Flight objects into a list. This allows us to use Sort(), which sorts by DateTime.
         List<Flight> flightList = new List<Flight>(flightDict.Values);
@@ -418,9 +444,24 @@ internal class Program
                 }
             }
 
+            // Determine the request code, if any, by looking at the Flight type.
+            string specialCode = "";
+            if (fl is CFFTFlight)
+            {
+                specialCode = "CFFT";
+            }
+            else if (fl is DDJBFlight)
+            {
+                specialCode = "DDJB";
+            }
+            else if (fl is LWTTFlight)
+            {
+                specialCode = "LWTT";
+            }
+
             // Display the relevant information, formatted with respect to the headers.
             Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines).Name,-23}{fl.Origin,-22}" +
-                              $"{fl.Destination,-23}{fl.ExpectedTime,-36}{fl.Status,-15}{boardingGateName}");
+                              $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-12}{specialCode,-15}{boardingGateName}");
         }
     }
 }
