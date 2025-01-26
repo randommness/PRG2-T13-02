@@ -70,10 +70,12 @@ namespace PRG2_T13_02
             {
                 output += $"\n{fl.ToString()}";
             }
+            output += "\nList of boarding gates:";
             foreach (BoardingGate bg in BoardingGates.Values)
             {
                 output += $"\n{bg.ToString()}";
             }
+            output += "\nList of gate fees:";
             foreach (KeyValuePair<string, double> kvp in GateFees)
             {
                 output += $"\n{kvp.Key}: ${kvp.Value}";
