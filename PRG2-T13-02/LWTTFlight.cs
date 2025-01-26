@@ -1,6 +1,6 @@
 ﻿//==========================================================
-// Student Number : 
-// Student Name	  : 
+// Student Number : S10240903H
+// Student Name	  : Sim Wen Jye Timothy
 // Partner Name	  : Tang Wei Zheng Caden
 //==========================================================
 
