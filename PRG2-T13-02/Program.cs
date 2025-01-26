@@ -69,7 +69,7 @@ internal class Program
         }
     }
 
-    //  LoadFlights() method creates the Flight objects from the flights.csv file.
+    // LoadFlights() method creates the Flight objects from the flights.csv file.
     private static Dictionary<string, Flight> LoadFlights(Dictionary<string, Airline> airlines)
     {
         Console.WriteLine("Loading Flights...");
