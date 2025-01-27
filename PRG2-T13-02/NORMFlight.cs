@@ -14,14 +14,7 @@ namespace PRG2_T13_02
         }
         public override double CalculateFees()
         {
-            if (Origin == "Singapore(SIN)")
-            {
-                return 800; // Base gate fee + special request fee
-            }
-            else
-            {
-                return 500; // Base gate fee + special request fee
-            }
+            return base.CalculateFees();
         }
         public override string ToString()
         {
