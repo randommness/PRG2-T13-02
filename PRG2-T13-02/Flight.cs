@@ -27,7 +27,7 @@ namespace PRG2_T13_02
         public abstract double CalculateFees();
         public override string ToString()
         {
-            return string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4,-10}", FlightNumber, Origin, Destination, ExpectedTime, Status);
+            return $"Flight number: {FlightNumber}, Origin: {Origin}, Destination: {Destination}, Expected Time: {ExpectedTime}, Status: {Status}";
         }
 
         public int CompareTo(Flight other)

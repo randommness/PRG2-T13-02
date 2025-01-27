@@ -1,4 +1,5 @@
 ﻿using PRG2_T13_02;
+using System.Diagnostics;
 
 internal class Program
 {
@@ -30,6 +31,10 @@ internal class Program
             {
                 DisplayScheduledFlights(airlines, flightDict, boardingGates);
             }
+            else if (menuInput == 8)
+            {
+                ProcessAllUnassignedFlights(flightDict, boardingGates, airlines);
+            }
             Console.WriteLine("\n\n\n");
         }
     }
@@ -49,17 +54,18 @@ internal class Program
             Console.WriteLine("5. Display Airline Flights");
             Console.WriteLine("6. Modify Flight Details");
             Console.WriteLine("7. Display Flight Schedule");
+            Console.WriteLine("8. Process all unassigned flights");
             Console.WriteLine("0. Exit\n");
 
             try
             {
                 Console.WriteLine("Please select your option:");
                 int userOption = Convert.ToInt32(Console.ReadLine());
-                if (userOption >= 0 && userOption <= 7)
+                if (userOption >= 0 && userOption <= 8)
                 {
                     return userOption;
                 }
-                Console.WriteLine("Please pick an option in the menu (0 to 7). Please try again.\n");
+                Console.WriteLine("Please pick an option in the menu (0 to 8). Please try again.\n");
             }
             catch (FormatException ex)
             {
@@ -177,6 +183,23 @@ internal class Program
         return null;
     }
 
+    public static string FindSpecialRequestCode(Flight fl)
+    {
+        if (fl is CFFTFlight)
+        {
+            return "CFFT";
+        }
+        else if (fl is DDJBFlight)
+        {
+            return "DDJB";
+        }
+        else if (fl is LWTTFlight)
+        {
+            return "LWTT";
+        }
+        return "N/A";
+    }
+
     // ListAllFlights() is menu option 1, basic feature 3. It displays all flights and their information.
     private static void ListAllFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict)
     {
@@ -264,22 +287,7 @@ internal class Program
         Console.WriteLine($"Origin: {flightObj.Origin}");
         Console.WriteLine($"Destination: {flightObj.Destination}");
         Console.WriteLine($"Expected Time: {flightObj.ExpectedTime}");
-        if (flightObj is DDJBFlight)
-        {
-            Console.WriteLine("Special Request Code: DDJB");
-        }
-        else if (flightObj is CFFTFlight)
-        {
-            Console.WriteLine("Special Request Code: CFFT");
-        }
-        else if (flightObj is LWTTFlight)
-        {
-            Console.WriteLine("Special Request Code: LWTT");
-        }
-        else
-        {
-            Console.WriteLine("Special Request Code: None");
-        }
+        Console.WriteLine($"Special Request Code: {FindSpecialRequestCode(flightObj)}");
 
         // Display boarding gate information.
         Console.WriteLine($"Boarding Gate Name: {boardingGateObj.GateName}");
@@ -444,24 +452,90 @@ internal class Program
                 }
             }
 
-            // Determine the request code, if any, by looking at the Flight type.
-            string specialCode = "";
-            if (fl is CFFTFlight)
-            {
-                specialCode = "CFFT";
-            }
-            else if (fl is DDJBFlight)
-            {
-                specialCode = "DDJB";
-            }
-            else if (fl is LWTTFlight)
-            {
-                specialCode = "LWTT";
-            }
-
             // Display the relevant information, formatted with respect to the headers.
             Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines).Name,-23}{fl.Origin,-22}" +
-                              $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-12}{specialCode,-15}{boardingGateName}");
+                              $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-12}{FindSpecialRequestCode(fl),-15}{boardingGateName}");
+        }
+    }
+
+    // ProcessAllUnassignedFlights() is menu option 8, advanced feature a. It mass processess all unassigned flights to a boarding gate.
+    public static void ProcessAllUnassignedFlights(Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates, Dictionary<string, Airline> airlines)
+    {
+        Console.WriteLine("=======================================");
+        Console.WriteLine("Unassigned flight automatic processer:");
+        Console.WriteLine("=======================================");
+
+        Queue<Flight> unassignedFlights = new Queue<Flight>();
+        int unassignedBg = 0;
+        int alreadyAssigned = 0;
+        foreach (Flight fl in flightDict.Values)
+        {
+            bool assigned = false;
+            foreach (BoardingGate bg in boardingGates.Values)
+            {
+                if (bg.Flight == fl)
+                {
+                    assigned = true;
+                    alreadyAssigned++;
+                    break;
+                }
+            }
+            if (!assigned)
+            {
+                unassignedFlights.Enqueue(fl);
+            }
+        }
+
+        foreach (BoardingGate bg in boardingGates.Values)
+        {
+            if (bg.Flight == null)
+            {
+                unassignedBg ++;
+            }
+        }
+
+        Console.WriteLine($"Number of flights without a boarding gate assigned: {unassignedFlights.Count}");
+        Console.WriteLine($"Number of boarding gates without a flight assigned: {unassignedBg}");
+
+        Console.WriteLine("\nFlight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Special Code   Boarding Gate");
+        int processCount = 0;
+        while (unassignedFlights.Count > 0)
+        {
+            Flight unassignedFl = unassignedFlights.Dequeue();
+            string specialReqCode = FindSpecialRequestCode(unassignedFl);
+            foreach (BoardingGate bg in boardingGates.Values)
+            {
+                if (bg.Flight == null)
+                {
+                    if ((specialReqCode == "CFFT" && bg.SupportsCFFT) || (specialReqCode == "DDJB" && bg.SupportsDDJB) ||
+                        (specialReqCode == "LWTT" && bg.SupportsLWTT))
+                    {
+                        bg.Flight = unassignedFl;
+                    }
+                    else if (specialReqCode == "N/A" && !bg.SupportsCFFT && !bg.SupportsDDJB && !bg.SupportsLWTT)
+                    {
+                        bg.Flight = unassignedFl;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                    Console.WriteLine($"{unassignedFl.FlightNumber,-16}{FindAirlineLinked(unassignedFl, airlines).Name,-23}{unassignedFl.Origin,-22}" +
+                                      $"{unassignedFl.Destination,-22}{unassignedFl.ExpectedTime,-35}{specialReqCode,-15}{bg.GateName}");
+                    processCount++;
+                    break;
+                }
+            }
+        }
+        Console.WriteLine($"Number of flights and boarding gates processed and assigned: {processCount}");
+        if (alreadyAssigned != 0)
+        {
+            Console.WriteLine($"Percentage of automatic assignment over manual assignment: " +
+                              $"{((Convert.ToDouble(processCount) / Convert.ToDouble(alreadyAssigned)) * 100).ToString("F2")}%");
+        }
+        else
+        {
+            Console.WriteLine($"All {processCount} processed flights were performed automatically without manual assignment.");
         }
     }
 }
