@@ -1,5 +1,4 @@
 ﻿using PRG2_T13_02;
-using System.Diagnostics;
 
 internal class Program
 {
@@ -88,7 +87,7 @@ internal class Program
             // Split the line of data, and also get the special request code (if any).
             string[] flightData = allFlightsData[i].Split(",");
             string specialReqCode = flightData[4];
-            Flight newFlight;
+            Flight newFlight = null;
 
             // Depending on the special request code, create the corresponding flight object.
             if (specialReqCode == "CFFT")
@@ -149,7 +148,7 @@ internal class Program
     }
 
     //  FlightAirlineAssignment() method assigns a Flight object to the corresponding Airline's flight dictionary.
-    private static void FlightAirlineAssignment(Flight fl, Dictionary<string, Airline> airlines)
+    private static bool FlightAirlineAssignment(Flight fl, Dictionary<string, Airline> airlines)
     {
         // Search through each Airline object in the airline dictionary.
         string flCode = fl.FlightNumber.Split(" ")[0];
@@ -158,15 +157,14 @@ internal class Program
             if (searchAirline.Code == flCode)
             {
                 searchAirline.AddFlight(fl);
-                return;
+                return true;
             }
         }
-        // No tied airline.
-        Console.WriteLine("WARNING: The flight you created has no airline assigned to it.");
+        return false;
     }
 
     // FindAirlineLinked() method returns the Airline object that holds the Flight object in search.
-    public static Airline FindAirlineLinked(Flight fl, Dictionary<string, Airline> airlines)
+    public static string FindAirlineLinked(Flight fl, Dictionary<string, Airline> airlines)
     {
         // Search for the tied airline. 
         foreach (Airline searchAirline in airlines.Values)
@@ -176,13 +174,14 @@ internal class Program
             {
                 if (searchFlight.FlightNumber == fl.FlightNumber)
                 {
-                    return searchAirline;
+                    return searchAirline.Name;
                 }
             }
         }
-        return null;
+        return "-";
     }
 
+    // FindSpecialRequestCode() method returns the special request code (if any) based on the Flight object
     public static string FindSpecialRequestCode(Flight fl)
     {
         if (fl is CFFTFlight)
@@ -213,7 +212,7 @@ internal class Program
         foreach (Flight fl in flightDict.Values)
         {
             // Display flight information, formatted.
-            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines).Name,-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
+            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines),-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
         }
     }
 
@@ -358,9 +357,23 @@ internal class Program
         // Keep looping until user is done with creating flight(s).
         while (true)
         {
-            // Prompt user for necessary flight info.
+            // Prompt user for necessary flight info. Prompt again if the input is empty.
             Console.Write("Enter Flight Number: ");
             string flightNo = Console.ReadLine();
+            bool validFlightNo = true;
+            foreach (string flNo in flightDict.Keys)
+            {
+                if (flNo == flightNo)
+                {
+                    Console.WriteLine($"Flight {flNo} already exists! Please try again.\n");
+                    validFlightNo = false;
+                    break;
+                }
+            }
+            if (!validFlightNo)
+            {
+                continue;
+            }
             Console.Write("Enter Origin: ");
             string origin = Console.ReadLine();
             Console.Write("Enter Destination: ");
@@ -408,10 +421,14 @@ internal class Program
             }
             // Add this flight object to the flight dictionary and the corresponding airline's flight dictionary.
             flightDict.Add(flightNo, newFlight);
-            FlightAirlineAssignment(newFlight, airlines);
+            if (!FlightAirlineAssignment(newFlight, airlines))
+            {
+                // No tied airline.
+                Console.WriteLine("WARNING: The flight you created has no airline assigned to it.");
+            }
 
             // Add the new flight's information into flights.csv file.
-            File.AppendAllText("flights.csv", $"{flightNo},{origin},{destination},{expectedTime},{reqCode}");
+            File.AppendAllText("flights.csv", $"\n{flightNo},{origin},{destination},{expectedTime},{reqCode}");
             Console.WriteLine($"Flight {flightNo} has been added!");
 
             // Prompt user if they wish to add another flight.
@@ -453,7 +470,7 @@ internal class Program
             }
 
             // Display the relevant information, formatted with respect to the headers.
-            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines).Name,-23}{fl.Origin,-22}" +
+            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines),-23}{fl.Origin,-22}" +
                               $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-12}{FindSpecialRequestCode(fl),-15}{boardingGateName}");
         }
     }
@@ -461,13 +478,17 @@ internal class Program
     // ProcessAllUnassignedFlights() is menu option 8, advanced feature a. It mass processess all unassigned flights to a boarding gate.
     public static void ProcessAllUnassignedFlights(Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates, Dictionary<string, Airline> airlines)
     {
-        Console.WriteLine("=======================================");
-        Console.WriteLine("Unassigned flight automatic processer:");
-        Console.WriteLine("=======================================");
+        // Headers.
+        Console.WriteLine("======================================");
+        Console.WriteLine("Unassigned flight automatic processor:");
+        Console.WriteLine("======================================");
 
+        // Initialise a queue and 2 variables - unassignedBg (unassigned Boarding Gate) & alreadyAssigned (assigned Flights)
         Queue<Flight> unassignedFlights = new Queue<Flight>();
         int unassignedBg = 0;
         int alreadyAssigned = 0;
+
+        // Loop through each Flight object and BoardingGate object till a BoardingGate's Flight attribute contains the same Flight object.
         foreach (Flight fl in flightDict.Values)
         {
             bool assigned = false;
@@ -480,60 +501,74 @@ internal class Program
                     break;
                 }
             }
-            if (!assigned)
+            if (!assigned) // Flight is not assigned to any boarding gate before, enqueue it.
             {
                 unassignedFlights.Enqueue(fl);
             }
         }
 
+        // Loop through each BoardingGate object to count the number of unassigned Boarding Gates.
         foreach (BoardingGate bg in boardingGates.Values)
         {
             if (bg.Flight == null)
             {
-                unassignedBg ++;
+                unassignedBg++;
             }
         }
 
+        // Display number of unassigned flights and number of unassigned boarding gates.
         Console.WriteLine($"Number of flights without a boarding gate assigned: {unassignedFlights.Count}");
         Console.WriteLine($"Number of boarding gates without a flight assigned: {unassignedBg}");
 
-        Console.WriteLine("\nFlight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Special Code   Boarding Gate");
+        // Display headers and initialise processsCount, a variable that counts the number of automatic assignments.
+        Console.WriteLine("\nList of updated flights:");
+        Console.WriteLine("Flight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Special Code   Boarding Gate");
         int processCount = 0;
+
+        // Loop through the entire Queue.
         while (unassignedFlights.Count > 0)
         {
+            // Dequeue a Flight object, get it's special request code.
             Flight unassignedFl = unassignedFlights.Dequeue();
             string specialReqCode = FindSpecialRequestCode(unassignedFl);
             foreach (BoardingGate bg in boardingGates.Values)
             {
+                // Only assign a flight to Boarding Gate if gate has no flight.
                 if (bg.Flight == null)
                 {
+                    // If either the boarding gate supports the requested code, or the boarding gate does NOT support any code (if no special request code),
+                    // then assign the Flight object to this BoardingGate object.
                     if ((specialReqCode == "CFFT" && bg.SupportsCFFT) || (specialReqCode == "DDJB" && bg.SupportsDDJB) ||
-                        (specialReqCode == "LWTT" && bg.SupportsLWTT))
-                    {
-                        bg.Flight = unassignedFl;
-                    }
-                    else if (specialReqCode == "N/A" && !bg.SupportsCFFT && !bg.SupportsDDJB && !bg.SupportsLWTT)
+                        (specialReqCode == "LWTT" && bg.SupportsLWTT) ||
+                        (specialReqCode == "N/A" && !bg.SupportsCFFT && !bg.SupportsDDJB && !bg.SupportsLWTT))
                     {
                         bg.Flight = unassignedFl;
                     }
                     else
                     {
+                        // The BoardingGate being checked cannot support this Flight.
                         continue;
                     }
-                    Console.WriteLine($"{unassignedFl.FlightNumber,-16}{FindAirlineLinked(unassignedFl, airlines).Name,-23}{unassignedFl.Origin,-22}" +
+                    // Display updated information about this flight. Update processCount and move on to the next Flight object.
+                    Console.WriteLine($"{unassignedFl.FlightNumber,-16}{FindAirlineLinked(unassignedFl, airlines),-23}{unassignedFl.Origin,-22}" +
                                       $"{unassignedFl.Destination,-22}{unassignedFl.ExpectedTime,-35}{specialReqCode,-15}{bg.GateName}");
                     processCount++;
                     break;
                 }
             }
         }
+
+        // Display statistics.
+        // Display the number of automatic assignments.
         Console.WriteLine($"Number of flights and boarding gates processed and assigned: {processCount}");
+
+        // Display the number of Flights and Boarding Gates processed automatically over those already assigned, as a percentage.
         if (alreadyAssigned != 0)
         {
             Console.WriteLine($"Percentage of automatic assignment over manual assignment: " +
                               $"{((Convert.ToDouble(processCount) / Convert.ToDouble(alreadyAssigned)) * 100).ToString("F2")}%");
         }
-        else
+        else // If there was no manual assignment piror to this, display that all processed flights so far were done automatically.
         {
             Console.WriteLine($"All {processCount} processed flights were performed automatically without manual assignment.");
         }

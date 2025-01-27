@@ -12,18 +12,11 @@ namespace PRG2_T13_02
         public DDJBFlight() : base() { }
         public DDJBFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) : base(flightNumber, origin, destination, expectedTime, status)
         {
-            RequestFee = 500;
+            RequestFee = 300;
         }
         public override double CalculateFees()
         {
-            if (Origin == "Singapore(SIN)")
-            {
-                return 800 + RequestFee; // Base gate fee + special request fee
-            }
-            else
-            {
-                return 500 + RequestFee; // Base gate fee + special request fee
-            }
+            return base.CalculateFees() + RequestFee;
         }
         public override string ToString()
         {

@@ -24,7 +24,17 @@ namespace PRG2_T13_02
             ExpectedTime = expectedTime;
             Status = status;
         }
-        public abstract double CalculateFees();
+        public virtual double CalculateFees()
+        {
+            if (Origin == "Singapore(SIN)")
+            {
+                return 800;
+            }
+            else
+            {
+                return 500;
+            }
+        }
         public override string ToString()
         {
             return $"Flight number: {FlightNumber}, Origin: {Origin}, Destination: {Destination}, Expected Time: {ExpectedTime}, Status: {Status}";
