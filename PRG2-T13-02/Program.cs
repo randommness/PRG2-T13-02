@@ -549,97 +549,140 @@ internal class Program
         }
 
         // Prompt user to select a flight number.
-        Console.Write("Choose an existing Flight to modify or delete: ");
-        string flightNumber = Console.ReadLine();
-
-        // Retrieve the selected flight.
-        if (!flightDict.TryGetValue(flightNumber, out Flight selectedFlight))
+        Flight selectedFlight;
+        while (true)
         {
+            Console.Write("Choose an existing Flight to modify or delete: ");
+            string flightNumber = Console.ReadLine();
+
+            if (flightDict.ContainsKey(flightNumber))
+            {
+                selectedFlight = flightDict[flightNumber];
+                break;
+            }
             Console.WriteLine("Invalid Flight Number. Please try again.");
-            return;
         }
 
         // Prompt user to choose an action.
-        Console.WriteLine("1. Modify Flight");
-        Console.WriteLine("2. Delete Flight");
-        Console.Write("Choose an option: ");
-        int action = Convert.ToInt32(Console.ReadLine());
+        int action = 0;
+        while (true)
+        {
+            Console.WriteLine("1. Modify Flight");
+            Console.WriteLine("2. Delete Flight");
+            Console.Write("Choose an option: ");
 
+            try
+            {
+                action = Convert.ToInt32(Console.ReadLine());
+                if (action == 1 || action == 2) break;
+                Console.WriteLine("Invalid input. Please enter 1 or 2.");
+            }
+            catch
+            {
+                Console.WriteLine("Invalid input. Please enter a valid number.");
+            }
+        }
+
+        // Handle Modify Flight
         if (action == 1)
         {
-            // Modify flight details.
-            Console.WriteLine("1. Modify Basic Information");
-            Console.WriteLine("2. Modify Status");
-            Console.WriteLine("3. Modify Special Request Code");
-            Console.WriteLine("4. Modify Boarding Gate");
-            Console.Write("Choose an option: ");
-            int modifyOption = Convert.ToInt32(Console.ReadLine());
+            int modifyOption = 0;
+            while (true)
+            {
+                Console.WriteLine("1. Modify Basic Information");
+                Console.WriteLine("2. Modify Status");
+                Console.WriteLine("3. Modify Special Request Code");
+                Console.WriteLine("4. Modify Boarding Gate");
+                Console.Write("Choose an option: ");
+
+                try
+                {
+                    modifyOption = Convert.ToInt32(Console.ReadLine());
+                    if (modifyOption >= 1 && modifyOption <= 4) break;
+                    Console.WriteLine("Invalid input. Please enter a number between 1 and 4.");
+                }
+                catch
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid number.");
+                }
+            }
 
             if (modifyOption == 1)
             {
-                // Modify basic information.
                 Console.Write("Enter new Origin: ");
                 selectedFlight.Origin = Console.ReadLine();
+
                 Console.Write("Enter new Destination: ");
                 selectedFlight.Destination = Console.ReadLine();
-                Console.Write("Enter new Expected Departure/Arrival Time (dd/MM/yyyy HH:mm): ");
-                selectedFlight.ExpectedTime = Convert.ToDateTime(Console.ReadLine());
+
+                while (true)
+                {
+                    Console.Write("Enter new Expected Departure/Arrival Time (dd/MM/yyyy HH:mm): ");
+                    string input = Console.ReadLine();
+                    try
+                    {
+                        selectedFlight.ExpectedTime = Convert.ToDateTime(input);
+                        break;
+                    }
+                    catch (FormatException ex)
+                    {
+                        Console.WriteLine("Invalid format. Please use dd/MM/yyyy HH:mm.");
+                    }
+                }
             }
             else if (modifyOption == 2)
             {
-                // Modify status.
                 Console.Write("Enter new Status: ");
                 selectedFlight.Status = Console.ReadLine();
             }
             else if (modifyOption == 3)
             {
-                // Modify special request code.
                 Console.Write("Enter new Special Request Code: ");
                 string specialRequestCode = Console.ReadLine();
                 // Update special request code logic here.
             }
             else if (modifyOption == 4)
             {
-                // Modify boarding gate.
-                Console.Write("Enter new Boarding Gate: ");
-                string boardingGateName = Console.ReadLine();
-                if (boardingGates.TryGetValue(boardingGateName, out BoardingGate boardingGate))
+                while (true)
                 {
-                    boardingGate.Flight = selectedFlight;
-                }
-                else
-                {
+                    Console.Write("Enter new Boarding Gate: ");
+                    string boardingGateName = Console.ReadLine();
+
+                    if (boardingGates.ContainsKey(boardingGateName))
+                    {
+                        boardingGates[boardingGateName].Flight = selectedFlight;
+                        break;
+                    }
                     Console.WriteLine("Invalid Boarding Gate. Please try again.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Invalid option. Please try again.");
-                return;
             }
 
             Console.WriteLine("Flight updated!");
         }
+
+        // Handle Delete Flight
         else if (action == 2)
         {
-            // Delete flight.
-            Console.Write("Are you sure you want to delete this flight? [Y/N]: ");
-            string confirmation = Console.ReadLine().ToUpper();
+            string confirmation = string.Empty;
+            while (true)
+            {
+                Console.Write("Are you sure you want to delete this flight? [Y/N]: ");
+                confirmation = Console.ReadLine().ToUpper();
+
+                if (confirmation == "Y" || confirmation == "N") break;
+                Console.WriteLine("Invalid input. Please enter Y or N.");
+            }
+
             if (confirmation == "Y")
             {
-                selectedAirline.Flights.Remove(flightNumber);
-                flightDict.Remove(flightNumber);
+                selectedAirline.Flights.Remove(selectedFlight.FlightNumber);
+                flightDict.Remove(selectedFlight.FlightNumber);
                 Console.WriteLine("Flight deleted!");
             }
             else
             {
                 Console.WriteLine("Flight deletion canceled.");
             }
-        }
-        else
-        {
-            Console.WriteLine("Invalid option. Please try again.");
-            return;
         }
 
         // Display updated flight details.
