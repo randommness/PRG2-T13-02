@@ -46,6 +46,10 @@ internal class Program
             {
                 ProcessAllUnassignedFlights(flightDict, boardingGates, airlines);
             }
+            else if (menuInput == 9)
+            {
+                DisplayTotalFeePerAirline(airlines, boardingGates);
+            }
             Console.WriteLine("\n\n\n");
         }
     }
@@ -66,13 +70,14 @@ internal class Program
             Console.WriteLine("6. Modify Flight Details");
             Console.WriteLine("7. Display Flight Schedule");
             Console.WriteLine("8. Process all unassigned flights");
+            Console.WriteLine("9. Display Total Fee per Airline for the Day");
             Console.WriteLine("0. Exit\n");
 
             try
             {
                 Console.WriteLine("Please select your option:");
                 int userOption = Convert.ToInt32(Console.ReadLine());
-                if (userOption >= 0 && userOption <= 8)
+                if (userOption >= 0 && userOption <= 9)
                 {
                     return userOption;
                 }
@@ -131,6 +136,7 @@ internal class Program
 
     private static Dictionary<string, Airline> LoadAirlineFile(Dictionary<string, Airline> air)
     {
+        Console.WriteLine("Loading Airlines...");
         string[] lines = File.ReadAllLines("airlines.csv");
         for (int i = 1; i < lines.Length; i++)
         {
@@ -146,6 +152,7 @@ internal class Program
 
     private static Dictionary<string, BoardingGate> LoadBoardingGateFile(Dictionary<string, BoardingGate> bg)
     {
+        Console.WriteLine("Loading Boarding Gates...");
         string[] lines2 = File.ReadAllLines("boardingGates.csv");
         for (int i = 1; i < lines2.Length; i++)
         {
@@ -857,4 +864,101 @@ internal class Program
             Console.WriteLine($"All {processCount} processed flights were performed automatically without manual assignment.");
         }
     }
+    // DisplayTotalFeePerAirline() is menu option 9, advanced feature b. It calculates the total fee per airline for the day.
+    private static void DisplayTotalFeePerAirline(Dictionary<string, Airline> airlines, Dictionary<string, BoardingGate> boardingGates)
+    {
+        // Check if all flights have been assigned boarding gates.
+        foreach (Flight flight in boardingGates.Values.Select(bg => bg.Flight))
+        {
+            if (flight == null)
+            {
+                Console.WriteLine("There are flights that have not been assigned boarding gates. Please assign all flights before running this feature again.");
+                return;
+            }
+        }
+
+        double totalFees = 0;
+        double totalDiscounts = 0;
+
+        // Display headers.
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Total Fees per Airline for the Day");
+        Console.WriteLine("=============================================");
+
+        // Calculate fees for each airline.
+        foreach (Airline airline in airlines.Values)
+        {
+            double airlineFees = 0;
+            double airlineDiscounts = 0;
+
+            foreach (Flight flight in airline.Flights.Values)
+            {
+                double flightFee = 0;
+
+                // Check if the origin or destination is Singapore (SIN).
+                if (flight.Origin == "Singapore (SIN)")
+                {
+                    flightFee += 800;
+                }
+                if (flight.Destination == "Singapore (SIN)")
+                {
+                    flightFee += 500;
+                }
+
+                // Check for special request codes and apply additional fees.
+                string specialRequestCode = FindSpecialRequestCode(flight);
+                if (specialRequestCode == "CFFT")
+                {
+                    flightFee += 200;
+                }
+                else if (specialRequestCode == "DDJB")
+                {
+                    flightFee += 150;
+                }
+                else if (specialRequestCode == "LWTT")
+                {
+                    flightFee += 100;
+                }
+
+                // Apply the boarding gate base fee.
+                flightFee += 300;
+
+                // Add the flight fee to the airline's total fees.
+                airlineFees += flightFee;
+            }
+
+            // Apply promotional discounts (example logic, adjust as needed).
+            if (airline.Flights.Count > 5)
+            {
+                airlineDiscounts = airlineFees * 0.1; // 10% discount for more than 5 flights.
+            }
+
+            // Calculate the final fees for the airline.
+            double finalAirlineFees = airlineFees - airlineDiscounts;
+
+            // Display the fees for the airline.
+            Console.WriteLine($"Airline: {airline.Name}");
+            Console.WriteLine($"Original Subtotal: ${airlineFees:F2}");
+            Console.WriteLine($"Discounts: -${airlineDiscounts:F2}");
+            Console.WriteLine($"Final Total: ${finalAirlineFees:F2}");
+            Console.WriteLine();
+
+            // Add to the total fees and discounts.
+            totalFees += airlineFees;
+            totalDiscounts += airlineDiscounts;
+        }
+
+        // Calculate the final total fees for all airlines.
+        double finalTotalFees = totalFees - totalDiscounts;
+
+        // Display the final totals.
+        Console.WriteLine("=============================================");
+        Console.WriteLine("Summary of All Airline Fees");
+        Console.WriteLine("=============================================");
+        Console.WriteLine($"Total Fees: ${totalFees:F2}");
+        Console.WriteLine($"Total Discounts: -${totalDiscounts:F2}");
+        Console.WriteLine($"Final Total Fees Collected: ${finalTotalFees:F2}");
+        Console.WriteLine($"Percentage of Discounts: {totalDiscounts / totalFees:P2}");
+    }
+
 }
