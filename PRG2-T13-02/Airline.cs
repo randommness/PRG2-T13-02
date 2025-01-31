@@ -27,7 +27,7 @@ namespace PRG2_T13_02
 
         public double CalculateFees()
         {
-            return 0; // ADVANCED FEATURE, edit later
+            return 0;
         }
 
         public bool RemoveFlight(Flight fl)
