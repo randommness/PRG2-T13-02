@@ -9,6 +9,7 @@
 // Advanced Feature B done by       : Sim Wen Jye Timothy (S10240903H)
 //========================================================================
 
+using System;
 using PRG2_T13_02;
 
 internal class Program
@@ -31,7 +32,7 @@ internal class Program
             // Call the correct method based on user input.
             if (menuInput == 1)
             {
-                ListAllFlights(airlines, flightDict);
+                ListAllFlights(airlines, flightDict, term5);
             }
             else if (menuInput == 2)
             {
@@ -55,11 +56,11 @@ internal class Program
             }
             else if (menuInput == 7)
             {
-                DisplayScheduledFlights(airlines, flightDict, boardingGates);
+                DisplayScheduledFlights(airlines, flightDict, boardingGates, term5);
             }
             else if (menuInput == 8)
             {
-                ProcessAllUnassignedFlights(flightDict, boardingGates, airlines);
+                ProcessAllUnassignedFlights(flightDict, boardingGates, airlines, term5);
             }
             else if (menuInput == 9)
             {
@@ -122,8 +123,17 @@ internal class Program
         for (int i = 1; i < allFlightsData.Length; i++)
         {
             // Split the line of data, and also get the special request code (if any).
+            string specialReqCode;
             string[] flightData = allFlightsData[i].Split(",");
-            string specialReqCode = flightData[4];
+            // Handle exceptions - if the CSV file line contains irregular data / invalid flight data, skip over that line and Flight obj is not created.
+            try
+            {
+                specialReqCode = flightData[4];
+            }
+            catch (Exception)
+            {
+                continue;
+            }
             Flight newFlight = null;
 
             // Depending on the special request code, create the corresponding flight object.
@@ -204,24 +214,6 @@ internal class Program
         return false;
     }
 
-    // FindAirlineLinked() method returns the Airline object that holds the Flight object in search.
-    public static string FindAirlineLinked(Flight fl, Dictionary<string, Airline> airlines)
-    {
-        // Search for the tied airline. 
-        foreach (Airline searchAirline in airlines.Values)
-        {
-            // Loop through each airline's flight dictionary to find which airline has this flight number.
-            foreach (Flight searchFlight in searchAirline.Flights.Values)
-            {
-                if (searchFlight.FlightNumber == fl.FlightNumber)
-                {
-                    return searchAirline.Name;
-                }
-            }
-        }
-        return "-";
-    }
-
     // FindSpecialRequestCode() method returns the special request code (if any) based on the Flight object
     public static string FindSpecialRequestCode(Flight fl)
     {
@@ -242,7 +234,7 @@ internal class Program
 
 
     // ListAllFlights() is menu option 1, basic feature 3. It displays all flights and their information.
-    private static void ListAllFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict)
+    private static void ListAllFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict, Terminal term5)
     {
         // Display headers.
         Console.WriteLine("=============================================");
@@ -254,7 +246,14 @@ internal class Program
         foreach (Flight fl in flightDict.Values)
         {
             // Display flight information, formatted.
-            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines),-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
+            if (term5.GetAirlineFromFlight(fl) != null)
+            {
+                Console.WriteLine($"{fl.FlightNumber,-16}{term5.GetAirlineFromFlight(fl).Name,-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
+            }
+            else
+            {
+                Console.WriteLine($"{fl.FlightNumber,-16}{"-",-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
+            }
         }
     }
 
@@ -429,7 +428,7 @@ internal class Program
                 catch (FormatException ex)
                 {
                     Console.WriteLine(ex.Message);
-                    Console.WriteLine("Wrong format. Please try again.");
+                    Console.WriteLine("Wrong format. Please try again.\n");
                 }
             }
 
@@ -738,13 +737,13 @@ internal class Program
     }
 
     // DisplayScheduledFlights() is menu option 7, basic feature 9. It displays all flights and info, ordered by Expected Departure/Arrival Time.
-    public static void DisplayScheduledFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates)
+    public static void DisplayScheduledFlights(Dictionary<string, Airline> airlines, Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates, Terminal term5)
     {
         // Display headers.
         Console.WriteLine("=============================================");
         Console.WriteLine("Flight Schedule for Changi Airport Terminal 5");
         Console.WriteLine("=============================================");
-        Console.WriteLine("Flight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Status      Special Code   Boarding Gate");
+        Console.WriteLine("Flight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Status        Special Code   Boarding Gate");
         
         // Set the Flight objects into a list. This allows us to use Sort(), which sorts by DateTime.
         List<Flight> flightList = new List<Flight>(flightDict.Values);
@@ -764,13 +763,21 @@ internal class Program
             }
 
             // Display the relevant information, formatted with respect to the headers.
-            Console.WriteLine($"{fl.FlightNumber,-16}{FindAirlineLinked(fl, airlines),-23}{fl.Origin,-22}" +
-                              $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-12}{FindSpecialRequestCode(fl),-15}{boardingGateName,-13}");
+            if (term5.GetAirlineFromFlight(fl) != null)
+            {
+                Console.WriteLine($"{fl.FlightNumber,-16}{term5.GetAirlineFromFlight(fl).Name,-23}{fl.Origin,-22}" +
+                                  $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-14}{FindSpecialRequestCode(fl),-15}{boardingGateName,-13}");
+            }
+            else
+            {
+                Console.WriteLine($"{fl.FlightNumber,-16}{"-",-23}{fl.Origin,-22}" +
+                                  $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-14}{FindSpecialRequestCode(fl),-15}{boardingGateName,-13}");
+            }
         }
     }
 
     // ProcessAllUnassignedFlights() is menu option 8, advanced feature A. It mass processes all unassigned flights to a boarding gate.
-    public static void ProcessAllUnassignedFlights(Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates, Dictionary<string, Airline> airlines)
+    public static void ProcessAllUnassignedFlights(Dictionary<string, Flight> flightDict, Dictionary<string, BoardingGate> boardingGates, Dictionary<string, Airline> airlines, Terminal term5)
     {
         // Headers.
         Console.WriteLine("================================================");
@@ -836,8 +843,16 @@ internal class Program
                     bg.Flight = unassignedFl;
 
                     // Display updated information about this flight. Update processCount and move on to the next Flight object.
-                    Console.WriteLine($"{unassignedFl.FlightNumber,-16}{FindAirlineLinked(unassignedFl, airlines),-23}{unassignedFl.Origin,-22}" +
-                                        $"{unassignedFl.Destination,-22}{unassignedFl.ExpectedTime,-35}{specialReqCode,-15}{bg.GateName}");
+                    if (term5.GetAirlineFromFlight(unassignedFl) != null)
+                    {
+                        Console.WriteLine($"{unassignedFl.FlightNumber,-16}{term5.GetAirlineFromFlight(unassignedFl).Name,-23}{unassignedFl.Origin,-22}" +
+                                          $"{unassignedFl.Destination,-22}{unassignedFl.ExpectedTime,-35}{specialReqCode,-15}{bg.GateName}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{unassignedFl.FlightNumber,-16}{"-",-23}{unassignedFl.Origin,-22}" +
+                                          $"{unassignedFl.Destination,-22}{unassignedFl.ExpectedTime,-35}{specialReqCode,-15}{bg.GateName}");
+                    }
                     processCount++;
                     break;
                 }
