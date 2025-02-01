@@ -8,12 +8,14 @@ namespace PRG2_T13_02
 {
     public class Terminal
     {
+        // Properties and Attributes.
         public string TerminalName { get; set; }
         public Dictionary<string, Airline> Airlines { get; set; }
         public Dictionary<string, Flight> Flights { get; set; }
         public Dictionary<string, BoardingGate> BoardingGates { get; set; }
         public Dictionary<string, double> GateFees { get; set; }
 
+        // Parameterized and Default Constructors.
         public Terminal() { }
         public Terminal(string terminalName, Dictionary<string, Airline> airlines, Dictionary<string, Flight> flights, Dictionary<string, BoardingGate> boardingGates, Dictionary<string, double> gateFees)
         {
@@ -24,31 +26,32 @@ namespace PRG2_T13_02
             GateFees = gateFees;
         }
 
+        // AddAirline() adds an Airline object to the Airlines dictionary.
         public bool AddAirline(Airline al)
         {
             return(Airlines.TryAdd(al.Code, al));
         }
 
+        // AddBoardingGate() adds a BoardingGate object to the BoardingGates dictionary.
         public bool AddBoardingGate(BoardingGate bg)
         {
             return(BoardingGates.TryAdd(bg.GateName, bg));
         }
 
+        // GetAirlineFromFlight() returns the Airline object that holds the Flight object in it's dictionary.
         public Airline GetAirlineFromFlight(Flight Flight)
         {
             foreach (KeyValuePair<string, Airline> kvp in Airlines)
             {
-                foreach (KeyValuePair<string, Flight> a in kvp.Value.Flights)
+                if (kvp.Value.Flights.ContainsValue(Flight))
                 {
-                    if (a.Value == Flight)
-                    {
-                        return kvp.Value;
-                    }
+                    return kvp.Value;
                 }
             }
             return null;
         }
 
+        // PrintAirlineFees() is part of advanced feature B. It displays the fees the Airline needs to pay.
         public void PrintAirlineFees()
         {
             foreach (KeyValuePair<string, Airline> kvp in Airlines)
@@ -57,6 +60,7 @@ namespace PRG2_T13_02
             }
         }
 
+        // ToString() displays all relavent infromation realted to the Terminal.
         public override string ToString()
         {
             string output = $"Terminal Name: {TerminalName}";

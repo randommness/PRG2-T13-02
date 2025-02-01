@@ -10,11 +10,14 @@ namespace PRG2_T13_02
 {
     public abstract class Flight : IComparable<Flight>
     {
+        // Properties and Attributes.
         public string FlightNumber { get; set; }
         public string Origin { get; set; }
         public string Destination { get; set; }
         public DateTime ExpectedTime { get; set; }
         public string Status { get; set; }
+
+        // Default and Parameterized Constructors.
         public Flight() { }
         public Flight(string flightNumber, string origin, string destination, DateTime expectedTime, string status)
         {
@@ -24,6 +27,8 @@ namespace PRG2_T13_02
             ExpectedTime = expectedTime;
             Status = status;
         }
+
+        // CalculateFees() returns only the arrival/departure fees. It must be overridden by child classes.
         public virtual double CalculateFees()
         {
             if (Origin == "Singapore(SIN)")
@@ -35,6 +40,8 @@ namespace PRG2_T13_02
                 return 500;
             }
         }
+
+        // ToString() returns flight information.
         public override string ToString()
         {
             return $"Flight number: {FlightNumber}, Origin: {Origin}, Destination: {Destination}, Expected Time: {ExpectedTime}, Status: {Status}";
