@@ -122,38 +122,36 @@ internal class Program
 
         for (int i = 1; i < allFlightsData.Length; i++)
         {
-            // Split the line of data, and also get the special request code (if any).
-            string specialReqCode;
-            string[] flightData = allFlightsData[i].Split(",");
+            Flight newFlight = null;
             // Handle exceptions - if the CSV file line contains irregular data / invalid flight data, skip over that line and Flight obj is not created.
             try
             {
+                string specialReqCode;
+                string[] flightData = allFlightsData[i].Split(",");
                 specialReqCode = flightData[4];
+
+                // Depending on the special request code, create the corresponding flight object.
+                if (specialReqCode == "CFFT")
+                {
+                    newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
+                }
+                else if (specialReqCode == "DDJB")
+                {
+                    newFlight = new DDJBFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
+                }
+                else if (specialReqCode == "LWTT")
+                {
+                    newFlight = new LWTTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
+                }
+                else
+                {
+                    newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
+                }
             }
             catch (Exception)
             {
                 continue;
             }
-            Flight newFlight = null;
-
-            // Depending on the special request code, create the corresponding flight object.
-            if (specialReqCode == "CFFT")
-            {
-                newFlight = new CFFTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
-            }
-            else if (specialReqCode == "DDJB")
-            {
-                newFlight = new DDJBFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
-            }
-            else if (specialReqCode == "LWTT")
-            {
-                newFlight = new LWTTFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
-            }
-            else
-            {
-                newFlight = new NORMFlight(flightData[0], flightData[1], flightData[2], Convert.ToDateTime(flightData[3]), "Scheduled");
-            }
-
             // Add this new object to the dictionary with flight number as key.
             flightDict.Add(newFlight.FlightNumber, newFlight);
 
@@ -401,19 +399,46 @@ internal class Program
         // Keep looping until user is done with creating flight(s).
         while (true)
         {
-            // Prompt user for necessary flight info. Prompt again if the input is empty.
+            // Prompt for necessary flight info.
+            // Input validation - flight number must be at least 1 char long and cannot already exist.
             Console.Write("Enter Flight Number: ");
             string flightNo = Console.ReadLine();
+            if (flightNo == "")
+            {
+                Console.WriteLine("Flight Number cannot be empty. Try again.\n");
+                continue;
+            }
             if (flightDict.ContainsKey(flightNo))
             {
-                Console.WriteLine($"Flight {flightNo} already exists! Please try again.\n");
+                Console.WriteLine($"Flight {flightNo} already exists. Try again.\n");
                 continue;
             }
 
-            Console.Write("Enter Origin: ");
-            string origin = Console.ReadLine();
-            Console.Write("Enter Destination: ");
-            string destination = Console.ReadLine();
+            // Input validation - both the origin and destination must be at least 1 char long.
+            string origin;
+            string destination;
+            while (true)
+            {
+                Console.Write("Enter Origin: ");
+                origin = Console.ReadLine();
+                if (origin == "")
+                {
+                    Console.WriteLine("Origin cannot be empty. Try again.\n");
+                    continue;
+                }
+                break;
+            }
+            while (true)
+            {
+                Console.Write("Enter Destination: ");
+                destination = Console.ReadLine();
+                if (destination == "")
+                {
+                    Console.WriteLine("Destination cannot be empty. Try again.\n");
+                    continue;
+                }
+                break;
+            }
 
             // Input validation - If the expected time is not of DateTime format, catch exception and repeat.
             DateTime expectedTime;
@@ -428,32 +453,43 @@ internal class Program
                 catch (FormatException ex)
                 {
                     Console.WriteLine(ex.Message);
-                    Console.WriteLine("Wrong format. Please try again.\n");
+                    Console.WriteLine("Wrong format. Try again.\n");
                 }
             }
 
-            // Prompt user for special request code, if any.
-            Console.Write("Enter Special Request Code (CFFT/DDJB/LWTT/None): ");
-            string reqCode = Console.ReadLine().ToUpper();
-
-            // Downcasting - Create the Flight object based on the special request code.
+            // Data validation - Special Request Code input must be valid.
             Flight newFlight;
-            if (reqCode == "CFFT")
+            string reqCode;
+            while (true)
             {
-                newFlight = new CFFTFlight(flightNo, origin, destination, expectedTime, "Scheduled");
-            }
-            else if (reqCode == "DDJB")
-            {
-                newFlight = new DDJBFlight(flightNo, origin, destination, expectedTime, "Scheduled");
-            }
-            else if (reqCode == "LWTT")
-            {
-                newFlight = new LWTTFlight(flightNo, origin, destination, expectedTime, "Scheduled");
-            }
-            else
-            {
-                reqCode = "";
-                newFlight = new NORMFlight(flightNo, origin, destination, expectedTime, "Scheduled");
+                // Prompt user for special request code, if any.
+                Console.Write("Enter Special Request Code (CFFT/DDJB/LWTT/None): ");
+                reqCode = Console.ReadLine().ToUpper();
+
+                // Downcasting - Create the Flight object based on the special request code.
+                if (reqCode == "CFFT")
+                {
+                    newFlight = new CFFTFlight(flightNo, origin, destination, expectedTime, "Scheduled");
+                }
+                else if (reqCode == "DDJB")
+                {
+                    newFlight = new DDJBFlight(flightNo, origin, destination, expectedTime, "Scheduled");
+                }
+                else if (reqCode == "LWTT")
+                {
+                    newFlight = new LWTTFlight(flightNo, origin, destination, expectedTime, "Scheduled");
+                }
+                else if (reqCode == "NONE" || reqCode == "")
+                {
+                    reqCode = "";
+                    newFlight = new NORMFlight(flightNo, origin, destination, expectedTime, "Scheduled");
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Special Request Code. Try again.\n");
+                    continue;
+                }
+                break;
             }
 
             // Add this flight object to the flight dictionary and the corresponding airline's flight dictionary.
