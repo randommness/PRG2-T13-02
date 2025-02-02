@@ -47,6 +47,7 @@ namespace PRG2_T13_02
             return $"Flight number: {FlightNumber}, Origin: {Origin}, Destination: {Destination}, Expected Time: {ExpectedTime}, Status: {Status}";
         }
 
+        // CompareTo() is part of IComparable interface. It compares DateTime of 2 Flight objects, for basic feature 9.
         public int CompareTo(Flight other)
         {
             return ExpectedTime.CompareTo(other.ExpectedTime);

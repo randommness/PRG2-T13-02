@@ -103,7 +103,7 @@ internal class Program
                 {
                     return userOption;
                 }
-                Console.WriteLine("Please pick an option in the menu (0 to 8). Please try again.\n");
+                Console.WriteLine("Please pick an option in the menu (0 to 9). Please try again.\n");
             }
             catch (FormatException ex)
             {
@@ -250,6 +250,7 @@ internal class Program
             }
             else
             {
+                // No airline tied to this flight.
                 Console.WriteLine($"{fl.FlightNumber,-16}{"-",-23}{fl.Origin,-23}{fl.Destination,-23}{fl.ExpectedTime}");
             }
         }
@@ -293,14 +294,14 @@ internal class Program
 
             if (!flightDict.TryGetValue(flightNo, out flightObj))
             {
-                // No corresponding object found.
+                // No corresponding Flight object found.
                 Console.WriteLine("Invalid flight number, please try again.\n");
                 continue;
             }
             break;
         }
 
-        // Keep looping through until we get a valid boardingGate object.
+        // Keep looping through until we get a valid BoardingGate object.
         while (true)
         {
             // Prompt for boarding gate. Search for corresponding boarding gate object.
@@ -339,54 +340,65 @@ internal class Program
         // Assign the flight object to this boading gate object.
         boardingGateObj.Flight = flightObj;
 
-        // Prompt for user whether they wish to update flight status.
-        Console.WriteLine("Would you like to update the status of the flight? (Y/N)");
-        string userResponse = Console.ReadLine().ToUpper();
-        if (userResponse == "Y")
+        // Input validation - user must input Y or N.
+        while (true)
         {
-            // Keep looping through until we successfully update the status.
-            while (true)
+            // Prompt for user whether they wish to update flight status.
+            Console.WriteLine("Would you like to update the status of the flight? (Y/N)");
+            string userResponse = Console.ReadLine().ToUpper();
+            if (userResponse == "Y")
             {
-                Console.WriteLine("1. Delayed");
-                Console.WriteLine("2. Boarding");
-                Console.WriteLine("3. On Time");
-                Console.WriteLine("Please select the new status of the flight:");
-                try
+                // Keep looping through until we successfully update the status.
+                while (true)
                 {
-                    // Try to convert input to integer, then update the object's status attribute based on input.
-                    int userInput = Convert.ToInt32(Console.ReadLine());
-                    if (userInput == 1)
+                    Console.WriteLine("1. Delayed");
+                    Console.WriteLine("2. Boarding");
+                    Console.WriteLine("3. On Time");
+                    Console.WriteLine("Please select the new status of the flight:");
+                    try
                     {
-                        flightObj.Status = "Delayed";
+                        // Try to convert input to integer, then update the object's status attribute based on input.
+                        int userInput = Convert.ToInt32(Console.ReadLine());
+                        if (userInput == 1)
+                        {
+                            flightObj.Status = "Delayed";
+                        }
+                        else if (userInput == 2)
+                        {
+                            flightObj.Status = "Boarding";
+                        }
+                        else if (userInput == 3)
+                        {
+                            flightObj.Status = "On Time";
+                        }
+                        else
+                        {
+                            // Input was integer but not one of the 3 stated options.
+                            Console.WriteLine("Invalid status option, please try again.\n");
+                            continue;
+                        }
+                        break;
                     }
-                    else if (userInput == 2)
+                    catch (FormatException ex)
                     {
-                        flightObj.Status = "Boarding";
-                    }
-                    else if (userInput == 3)
-                    {
-                        flightObj.Status = "On Time";
-                    }
-                    else
-                    {
-                        // Input was integer but not one of the 3 stated options.
-                        Console.WriteLine("Invalid status option, please try again.\n");
+                        // Input was not of integer type.
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine("Only numerical values are accepted. Please try again.\n");
                         continue;
                     }
-                    break;
                 }
-                catch (FormatException ex)
-                {
-                    // Input was not of integer type.
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine("Only numerical values are accepted. Please try again.\n");
-                    continue;
-                }
+                break;
             }
-        }
-        else
-        {
-            flightObj.Status = "On Time";
+            else if (userResponse == "N")
+            {
+                flightObj.Status = "On Time";
+                break;
+            }
+            else
+            {
+                // Invalid input.
+                Console.WriteLine("Invalid input, please enter Y or N. Try again.\n");
+            }
         }
 
         // Display successful update message, then break out of this loop and method.
@@ -811,6 +823,7 @@ internal class Program
             }
             else
             {
+                // No assigned airline (replace with "-")
                 Console.WriteLine($"{fl.FlightNumber,-16}{"-",-23}{fl.Origin,-22}" +
                                   $"{fl.Destination,-22}{fl.ExpectedTime,-35}{fl.Status,-14}{FindSpecialRequestCode(fl),-15}{boardingGateName,-13}");
             }
@@ -830,6 +843,7 @@ internal class Program
         int unassignedBg = 0;
         int alreadyAssigned = 0;
 
+        // To check if a flight has already been assigned to a BoardingGate.
         // Loop through each Flight object and BoardingGate object till a BoardingGate's Flight attribute contains the same Flight object.
         foreach (Flight fl in flightDict.Values)
         {
@@ -891,6 +905,7 @@ internal class Program
                     }
                     else
                     {
+                        // No airline tied to this Flight object, replace with "-".
                         Console.WriteLine($"{unassignedFl.FlightNumber,-16}{"-",-23}{unassignedFl.Origin,-22}" +
                                           $"{unassignedFl.Destination,-22}{unassignedFl.ExpectedTime,-35}{specialReqCode,-15}{bg.GateName}");
                     }
@@ -914,12 +929,12 @@ internal class Program
         // Display the number of Flights and Boarding Gates processed automatically over those already assigned, as a percentage.
         if (alreadyAssigned != 0)
         {
-            Console.WriteLine($"Percentage of automatic assignment over manual assignment: " +
+            Console.WriteLine($"Percentage of flights automatically assigned over flights already assigned: " +
                               $"{((Convert.ToDouble(processCount) / Convert.ToDouble(alreadyAssigned)) * 100).ToString("F2")}%");
         }
-        else // If there was no manual assignment piror to this, display that all processed flights so far were done automatically.
+        else // If there was no assignment piror to this, display that all processed flights so far were done automatically.
         {
-            Console.WriteLine($"All {processCount} processed flights were performed automatically without manual assignment.");
+            Console.WriteLine($"All {processCount} processed flights were performed automatically without any other flights being assigned before.");
         }
     }
 
