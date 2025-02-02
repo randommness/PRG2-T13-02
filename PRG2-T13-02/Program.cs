@@ -16,12 +16,14 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        // Initialise 3 dictionaries based on the 3 csv files by calling the corresponding methods.
+        // Initialise the 3 dictionaries based on the 3 CSV files by calling the corresponding methods.
         Dictionary<string, Airline> airlines = new Dictionary<string, Airline>();
         LoadAirlineFile(airlines);
         Dictionary<string, BoardingGate> boardingGates = new Dictionary<string, BoardingGate>();
         LoadBoardingGateFile(boardingGates);
         Dictionary<string, Flight> flightDict = LoadFlights(airlines);
+
+        // Also create the Terminal object.
         Dictionary<string, double> gateFees = new Dictionary<string, double>();
         Terminal term5 = new Terminal("Terminal 5", airlines, flightDict, boardingGates, gateFees);
         Console.WriteLine("\n\n\n");
@@ -97,13 +99,14 @@ internal class Program
 
             try
             {
+                // Input validation - Option must be of integer type and between 0 and 9.
                 Console.WriteLine("Please select your option:");
                 int userOption = Convert.ToInt32(Console.ReadLine());
                 if (userOption >= 0 && userOption <= 9)
                 {
                     return userOption;
                 }
-                Console.WriteLine("Please pick an option in the menu (0 to 9). Please try again.\n");
+                Console.WriteLine("Pick an option in the menu (0 to 9). Please try again.\n");
             }
             catch (FormatException ex)
             {
@@ -127,9 +130,8 @@ internal class Program
             // Handle exceptions - if the CSV file line contains irregular data / invalid flight data, skip over that line and Flight obj is not created.
             try
             {
-                string specialReqCode;
                 string[] flightData = allFlightsData[i].Split(",");
-                specialReqCode = flightData[4];
+                string specialReqCode = flightData[4];
 
                 // Depending on the special request code, create the corresponding flight object.
                 if (specialReqCode == "CFFT")
@@ -151,7 +153,7 @@ internal class Program
             }
             catch (Exception)
             {
-                continue;
+                continue; // Invalid data, Flight object will not be created.
             }
             // Add this new object to the dictionary with flight number as key.
             flightDict.Add(newFlight.FlightNumber, newFlight);
@@ -374,7 +376,7 @@ internal class Program
                         else
                         {
                             // Input was integer but not one of the 3 stated options.
-                            Console.WriteLine("Invalid status option, please try again.\n");
+                            Console.WriteLine("Invalid status option, pick between 1 to 3. Please try again.\n");
                             continue;
                         }
                         break;
