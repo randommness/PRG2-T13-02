@@ -982,35 +982,8 @@ internal class Program
 
             foreach (Flight flight in airline.Flights.Values)
             {
-                double flightFee = 0;
-
-                // Check if the origin or destination is Singapore (SIN).
-                if (flight.Origin == "Singapore (SIN)")
-                {
-                    flightFee += 800;
-                }
-                if (flight.Destination == "Singapore (SIN)")
-                {
-                    flightFee += 500;
-                }
-
-                // Check for special request codes and apply additional fees.
-                string specialRequestCode = FindSpecialRequestCode(flight);
-                if (specialRequestCode == "CFFT")
-                {
-                    flightFee += 200;
-                }
-                else if (specialRequestCode == "DDJB")
-                {
-                    flightFee += 150;
-                }
-                else if (specialRequestCode == "LWTT")
-                {
-                    flightFee += 100;
-                }
-
-                // Apply the boarding gate base fee.
-                flightFee += 300;
+                // Use the CalculateFees() method from the specific flight type (CFFTFlight, DDJBFlight, etc.).
+                double flightFee = flight.CalculateFees();
 
                 // Add the flight fee to the airline's total fees.
                 airlineFees += flightFee;
@@ -1024,7 +997,7 @@ internal class Program
                 {
                     specificOriginFlights++;
                 }
-                if (specialRequestCode == "None")
+                if (FindSpecialRequestCode(flight) == "None")
                 {
                     noSpecialRequestFlights++;
                 }
