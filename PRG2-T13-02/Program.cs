@@ -22,9 +22,10 @@ internal class Program
         Dictionary<string, BoardingGate> boardingGates = new Dictionary<string, BoardingGate>();
         LoadBoardingGateFile(boardingGates);
         Dictionary<string, Flight> flightDict = LoadFlights(airlines);
-        Terminal term5 = new Terminal("Terminal 5", airlines, flightDict, boardingGates, null);
+        Dictionary<string, double> gateFees = new Dictionary<string, double>();
+        Terminal term5 = new Terminal("Terminal 5", airlines, flightDict, boardingGates, gateFees);
         Console.WriteLine("\n\n\n");
-        
+
         // Loop keeps going until user manually exits.
         while (true)
         {
@@ -64,7 +65,7 @@ internal class Program
             }
             else if (menuInput == 9)
             {
-                DisplayTotalFeePerAirline(airlines, boardingGates);
+                DisplayTotalFeePerAirline(term5.Airlines, term5.BoardingGates);
             }
             else
             {
@@ -194,7 +195,6 @@ internal class Program
         Console.WriteLine($"{bg.Count} Boarding Gates Loaded!");
         return bg;
     }
-
 
     //  FlightAirlineAssignment() method assigns a Flight object to the corresponding Airline's flight dictionary.
     private static bool FlightAirlineAssignment(Flight fl, Dictionary<string, Airline> airlines)
@@ -780,7 +780,7 @@ internal class Program
         Console.WriteLine("Flight Schedule for Changi Airport Terminal 5");
         Console.WriteLine("=============================================");
         Console.WriteLine("Flight Number   Airline Name           Origin                Destination           Expected Departure/Arrival Time    Status        Special Code   Boarding Gate");
-        
+
         // Set the Flight objects into a list. This allows us to use Sort(), which sorts by DateTime.
         List<Flight> flightList = new List<Flight>(flightDict.Values);
         flightList.Sort();
@@ -872,7 +872,7 @@ internal class Program
             {
                 // If either the boarding gate supports the requested code, or the boarding gate does NOT support any code (if no special request code),
                 // and this boarding gate has no assigned flight, then assign the Flight object to this BoardingGate object.
-                if ((bg.Flight == null) && 
+                if ((bg.Flight == null) &&
                    ((specialReqCode == "CFFT" && bg.SupportsCFFT) || (specialReqCode == "DDJB" && bg.SupportsDDJB) || (specialReqCode == "LWTT" && bg.SupportsLWTT) ||
                     (specialReqCode == "None" && !bg.SupportsCFFT && !bg.SupportsDDJB && !bg.SupportsLWTT)))
                 {
@@ -921,14 +921,39 @@ internal class Program
     // DisplayTotalFeePerAirline() is menu option 9, advanced feature b. It calculates the total fee per airline for the day.
     private static void DisplayTotalFeePerAirline(Dictionary<string, Airline> airlines, Dictionary<string, BoardingGate> boardingGates)
     {
+        // Create a list to store flight numbers of unassigned flights.
+        List<string> unassignedFlights = new List<string>();
+
         // Check if all flights have been assigned boarding gates.
-        foreach (Flight flight in boardingGates.Values.Select(bg => bg.Flight))
+        foreach (Airline airline in airlines.Values)
         {
-            if (flight == null)
+            foreach (Flight flight in airline.Flights.Values)
             {
-                Console.WriteLine("There are flights that have not been assigned boarding gates. Please assign all flights before running this feature again.");
-                return;
+                bool isAssigned = false;
+
+                // Check if the flight is assigned to any boarding gate.
+                foreach (BoardingGate gate in boardingGates.Values)
+                {
+                    if (gate.Flight != null && gate.Flight.FlightNumber == flight.FlightNumber)
+                    {
+                        isAssigned = true;
+                        break;
+                    }
+                }
+
+                // If the flight is not assigned to any boarding gate, add its flight number to the list.
+                if (!isAssigned)
+                {
+                    unassignedFlights.Add(flight.FlightNumber);
+                }
             }
+        }
+
+        // If there are unassigned flights, display an error message with the flight numbers.
+        if (unassignedFlights.Count > 0)
+        {
+            Console.WriteLine($"Flights {string.Join(", ", unassignedFlights)} have not been assigned boarding gates. Please assign all flights before running this feature again.");
+            return;
         }
 
         double totalFees = 0;
