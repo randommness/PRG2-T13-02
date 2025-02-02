@@ -21,7 +21,7 @@ namespace PRG2_T13_02
         // ToString() returns flight information.
         public override string ToString()
         {
-            return string.Format("{0,-10} {1,-10} {2,-10} {3,-10} {4,-10} {5,-10}", FlightNumber, Origin, Destination, ExpectedTime, Status, CalculateFees());
+            return $"{base.ToString()}, Fees: {CalculateFees()}";
         }
     }
 }

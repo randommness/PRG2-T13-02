@@ -64,17 +64,17 @@ namespace PRG2_T13_02
         public override string ToString()
         {
             string output = $"Terminal Name: {TerminalName}";
-            output += "\nList of airlines:";
+            output += "\n\n\nList of airlines:";
             foreach (Airline al in Airlines.Values)
             {
-                output += $"\n{al.ToString()}";
+                output += $"\n\n{al.ToString()}";
             }
-            output += "\nList of flights:";
+            output += "\n\n\nList of flights:";
             foreach (Flight fl in Flights.Values)
             {
                 output += $"\n{fl.ToString()}";
             }
-            output += "\nList of boarding gates:";
+            output += "\n\n\nList of boarding gates:";
             foreach (BoardingGate bg in BoardingGates.Values)
             {
                 output += $"\n{bg.ToString()}";
