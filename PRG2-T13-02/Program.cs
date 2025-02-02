@@ -65,7 +65,7 @@ internal class Program
             }
             else if (menuInput == 9)
             {
-                DisplayTotalFeePerAirline(term5.Airlines, term5.BoardingGates);
+                DisplayTotalFeePerAirline(term5.Airlines, term5.BoardingGates, term5);
             }
             else
             {
@@ -924,7 +924,7 @@ internal class Program
     }
 
     // DisplayTotalFeePerAirline() is menu option 9, advanced feature b. It calculates the total fee per airline for the day.
-    private static void DisplayTotalFeePerAirline(Dictionary<string, Airline> airlines, Dictionary<string, BoardingGate> boardingGates)
+    private static void DisplayTotalFeePerAirline(Dictionary<string, Airline> airlines, Dictionary<string, BoardingGate> boardingGates, Terminal terminal)
     {
         // Create a list to store flight numbers of unassigned flights.
         List<string> unassignedFlights = new List<string>();
@@ -975,6 +975,11 @@ internal class Program
             double airlineFees = 0;
             double airlineDiscounts = 0;
 
+            int flightCount = airline.Flights.Count;
+            int earlyLateFlights = 0;
+            int specificOriginFlights = 0;
+            int noSpecialRequestFlights = 0;
+
             foreach (Flight flight in airline.Flights.Values)
             {
                 double flightFee = 0;
@@ -1009,12 +1014,34 @@ internal class Program
 
                 // Add the flight fee to the airline's total fees.
                 airlineFees += flightFee;
+
+                // Check for promotional discounts.
+                if (flight.ExpectedTime.Hour < 11 || flight.ExpectedTime.Hour >= 21)
+                {
+                    earlyLateFlights++;
+                }
+                if (flight.Origin == "Dubai (DXB)" || flight.Origin == "Bangkok (BKK)" || flight.Origin == "Tokyo (NRT)")
+                {
+                    specificOriginFlights++;
+                }
+                if (specialRequestCode == "None")
+                {
+                    noSpecialRequestFlights++;
+                }
             }
 
-            // Apply promotional discounts (example logic, adjust as needed).
-            if (airline.Flights.Count > 5)
+            // Apply promotional discounts.
+            int discountForEvery3Flights = (flightCount / 3) * 350;
+            int discountForEarlyLateFlights = earlyLateFlights * 110;
+            int discountForSpecificOriginFlights = specificOriginFlights * 25;
+            int discountForNoSpecialRequestFlights = noSpecialRequestFlights * 50;
+
+            airlineDiscounts = discountForEvery3Flights + discountForEarlyLateFlights + discountForSpecificOriginFlights + discountForNoSpecialRequestFlights;
+
+            // Apply additional discount for airlines with more than 5 flights.
+            if (flightCount > 5)
             {
-                airlineDiscounts = airlineFees * 0.1; // 10% discount for more than 5 flights.
+                airlineDiscounts += airlineFees * 0.03; // 3% off the total bill.
             }
 
             // Calculate the final fees for the airline.
