@@ -579,15 +579,20 @@ internal class Program
         }
 
         // Prompt user to enter the airline code.
-        Console.Write("Enter Airline Code: ");
-        string airlineCode = Console.ReadLine().ToUpper();
-
-        // Retrieve the selected airline.
-        if (!airlines.TryGetValue(airlineCode, out Airline selectedAirline))
+        string airlineCode;
+        while (true)
         {
+            Console.Write("Enter Airline Code: ");
+            airlineCode = Console.ReadLine().ToUpper();
+
+            if (airlines.ContainsKey(airlineCode))
+            {
+                break;
+            }
             Console.WriteLine("Invalid Airline Code. Please try again.");
-            return;
         }
+        // Retrieve the selected airline
+        Airline selectedAirline = airlines[airlineCode];
 
         // Display flights for the selected airline.
         Console.WriteLine("=============================================");
