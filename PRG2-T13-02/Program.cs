@@ -1000,13 +1000,13 @@ internal class Program
             foreach (Flight flight in airline.Flights.Values)
             {
                 // Use the CalculateFees() method from the specific flight type (CFFTFlight, DDJBFlight, etc.).
-                double flightFee = flight.CalculateFees();
+                double flightFee = flight.CalculateFees() + 300;
 
                 // Add the flight fee to the airline's total fees.
                 airlineFees += flightFee;
 
                 // Check for promotional discounts.
-                if (flight.ExpectedTime.Hour < 11 || flight.ExpectedTime.Hour >= 21)
+                if (flight.ExpectedTime.Hour < 11 || flight.ExpectedTime.Hour > 21)
                 {
                     earlyLateFlights++;
                 }

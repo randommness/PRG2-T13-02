@@ -31,7 +31,7 @@ namespace PRG2_T13_02
         // CalculateFees() returns only the arrival/departure fees. It must be overridden by child classes.
         public virtual double CalculateFees()
         {
-            if (Origin == "Singapore(SIN)")
+            if (Origin == "Singapore (SIN)")
             {
                 return 800;
             }
